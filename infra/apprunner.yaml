@@ -1,0 +1,24 @@
+# AWS App Runner source configuration (apprunner.yaml).
+# Commit this at the repo root or point the App Runner service at it.
+version: 1.0
+runtime: docker
+build:
+  commands:
+    build: []
+run:
+  runtime-version: latest
+  command: uvicorn app.main:app --host 0.0.0.0 --port 8080
+  network:
+    port: 8080
+  env:
+    - name: BASE_URL
+      value: "https://api.deepseek.com"
+    - name: PRIMARY_MODEL
+      value: "deepseek-chat"
+    - name: JUDGE_MODEL
+      value: "deepseek-chat"
+    - name: LOG_LEVEL
+      value: "INFO"
+  secrets:
+    - name: DEEPSEEK_API_KEY
+      value-from: "arn:aws:secretsmanager:us-east-1:000000000000:secret:ai-answer-service/deepseek-api-key"
