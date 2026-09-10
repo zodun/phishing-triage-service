@@ -16,20 +16,19 @@ python3 -m venv .venv
 ```
 
 Open the local URL printed in the terminal (normally `http://127.0.0.1:7860`; the
-app chooses the next available port if that port is occupied). 
+app chooses the next available port if that port is occupied).
 
 ## Connect your Gmail account
 
-The **Account setup** accordion now walks through Google configuration and lets you
+The **Account setup** accordion walks through Google configuration and lets you
 import the downloaded Desktop app client JSON directly. Setup status identifies
-missing Google/model settings before you try to connect. There is no need to
-manually copy a file into a hidden directory.
+missing Google/model settings before you try to connect.
 
 1. Create or select a project in the [Google Cloud console](https://console.cloud.google.com/).
 2. Enable the **Gmail API** and configure the Google Auth Platform consent screen.
 3. For an external app in testing, add your Gmail address as a test user.
 4. Create an OAuth client with application type **Desktop app** and download its JSON.
-5. In **Account setup**, upload the JSON under **Google client JSON** and click
+5. In **Account setup**, upload the JSON under **Choose the file you downloaded from Google** and click
    **Save Google file**. Alternatively, copy it to `.credentials/gmail-client.json`.
 6. Click **Connect Gmail** on the connection step. Click the **Continue with Google** link
    that appears and finish sign-in within three minutes. It opens in your current
@@ -51,14 +50,14 @@ A hosted multi-user version would require per-user OAuth and token storage.
 
 ## Configure invoice extraction
 
-DeepSeek is supported as well. Choose **DeepSeek** under **Your AI service** and
+For DeepSeek, choose **DeepSeek** under **Your AI service** and
 save your DeepSeek API key. The app uses `deepseek-v4-flash` through DeepSeek's
 [official OpenAI-compatible API](https://api-docs.deepseek.com/). Advanced options
 let you change the model. For environment-based setup, use
 `INVOICE_MODEL_PROVIDER=deepseek`, `DEEPSEEK_API_KEY`, and optionally `INVOICE_MODEL`.
 
-You can now enter the provider, API key, model/deployment, and optional Azure
-endpoint under **Account setup → Choose your invoice model**. Click **Save and continue**. These settings are stored with owner-only permissions in
+Enter the provider, API key, model/deployment, and optional Azure
+endpoint under **Account setup → 2. Set up invoice reading**. Click **Save and continue**. These settings are stored with owner-only permissions in
 `.credentials/invoice-model.json`; the API key is cleared from the input after
 saving. Saved settings take precedence over environment variables. Saving validates
 the configuration format; credentials are checked by the provider when reading an invoice.
@@ -83,8 +82,8 @@ OPENAI_AGENTS_API_VERSION=2024-08-01-preview
 INVOICE_MODEL=your-deployment-name
 ```
 
-Use a deployment that supports chat completions with JSON output. Only the selected
-message's body and PDF text are passed to the configured AI provider when you click
+Use a deployment that supports chat completions with JSON output. Selected email content (including sender, reply address, subject, links, and body)
+and extracted PDF text are passed to the configured AI provider when you click
 **Check email**. Search results alone do not trigger model calls.
 
 Optional `.env` settings:
@@ -102,10 +101,12 @@ Restart after changing `.env`. Settings saved through the interface apply immedi
 - **Google setup needed:** download a Desktop OAuth client from Google Cloud and
   import it in Account setup. A Gmail address/password alone cannot replace this file.
 - **Wrong client type:** create a Desktop app client, not a Web app or service account.
-- **Access blocked / 403:** enable the Gmail API and add your Gmail address to the
+- **Google is temporarily limiting requests:** automatic retries have been exhausted.
+  Wait a minute before searching again; reconnecting does not reset the rate limit.
+- **Access blocked / permission denied:** enable the Gmail API and add your Gmail address to the
   consent screen's test users. Check any error shown by Google during sign-in.
 - **Timed out:** click Connect Gmail again and use the sign-in link within three minutes.
-- **Invoice model settings missing:** add your OpenAI or Azure OpenAI credentials
+- **Invoice model settings missing:** add your OpenAI, DeepSeek, or Azure OpenAI credentials
   in Account setup; Gmail sign-in alone does not configure invoice extraction.
 
 ## Use the workflow
@@ -114,7 +115,7 @@ The interface shows one step at a time:
 
 - **Connect Gmail:** finish one-time setup if needed, then choose your Google account.
 - **Choose an invoice:** click **Find invoice emails**, choose a message, and click
-  **Check email**. Search options and your signature are under the collapsed options section.
+  **Check email**. Use **Search options and email signature** to change the date range or search scope.
 - **Review your email:** check the invoice summary and customer, then edit the message.
   Copy it into Gmail or use **Download email draft**. The original document is under
   **See the original invoice**.
@@ -131,6 +132,13 @@ accounts for payments made after the invoice was issued. It does not add late fe
 bank instructions, or legal threats. Missing recipient addresses remain blank for
 you to verify and enter. Missing core invoice details, ambiguous dates/currency,
 paid invoices, and dates that have not passed prevent automatic reminder generation.
+
+## What the search includes
+
+The count includes messages with a parseable PDF attachment or a direct HTTP(S)
+link whose path ends in `.pdf`. Shopping and unsubscribe links do not qualify.
+Linked files are not downloaded or verified. An email with only a PDF link can
+receive an email check, but invoice extraction requires an attachment.
 
 ## PDF and processing limits
 

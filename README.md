@@ -1,24 +1,62 @@
-# Phishing Triage Service — production-grade LLM feature with evaluation & guardrails
+# Phishing Triage Service
 
-An LLM feature wrapped in the engineering rigor that separates a shipped service
-from a demo: a versioned eval set with a scoring rubric, input/output guardrails,
-containerization, a CI/CD pipeline that gates on eval results, and structured
-logging + metrics.
+Check emails for phishing indicators, review the evidence, and keep a person in
+control of the next step.
 
-The feature: **`POST /v1/classify`** takes raw email text and returns a validated
-JSON verdict — `label` (`phishing` / `legit` / `suspicious`), `confidence`,
-`reason`, `indicators`. The model call is ~20% of the project; the other 80% is
-everything around it.
+This repository has two applications:
 
-> LLM provider: **DeepSeek** via its OpenAI-compatible API (`openai` SDK pointed at
-> `https://api.deepseek.com`). Swappable — `app/llm.py` is the only integration point.
+| Application | What it does | Start here |
+| --- | --- | --- |
+| Email classification API | Accepts email text and returns a verdict with supporting indicators. Includes a browser demo. | [Run the API](#run-the-api) |
+| Local Gmail app | Finds PDF invoices, checks emails, and prepares editable payment reminders. | [Gmail app setup](local_invoice/README.md) |
 
-## Local Gmail and PDF app
+The API uses DeepSeek. The Gmail app supports OpenAI, DeepSeek, and Azure OpenAI.
+Both can make mistakes; their output is for review, not proof that an email is safe.
 
-The repository also includes [a local Gmail invoice workflow](local_invoice/README.md).
-It finds emails with validated PDF attachments or direct PDF links, checks for
-phishing indicators, and prepares editable reminders for eligible overdue invoices.
-Run it locally with read-only Gmail access; it does not send email.
+## Run the API
+
+Requires Python 3.12 or later. From the repository root:
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -e ".[dev]"
+```
+
+Create a `.env` file with your provider key:
+
+```dotenv
+DEEPSEEK_API_KEY=your-key
+```
+
+Start the server, then open **http://localhost:8080**:
+
+```sh
+uvicorn app.main:app --reload --port 8080
+```
+
+To try the app without a provider key, start it with `LLM_FAKE=true`. This uses
+canned responses for development; it does not measure real classification accuracy.
+
+### Classify an email
+
+```sh
+curl http://localhost:8080/v1/classify \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"Subject: Account locked. Reply with your password to restore access."}'
+```
+
+The response includes a classification with `label` (`phishing`, `legit`, or
+`suspicious`), `confidence`, `reason`, and `indicators`, plus any guardrails that
+fired. The service limits input size, flags instruction-injection attempts,
+validates model output, drops indicators absent from the email, and scrubs
+secret-like output. Invalid responses are retried before a fallback verdict.
+
+Other endpoints: `/healthz` for liveness and `/metrics` for Prometheus metrics.
+
+## Run the Gmail app
+
+Requires Python 3.11 or later. It runs locally and uses read-only Gmail access.
 
 ```sh
 cd local_invoice
@@ -27,144 +65,66 @@ python3 -m venv .venv
 .venv/bin/python invoice_app.py
 ```
 
----
+Open **http://127.0.0.1:7860** and follow the setup prompts. See the
+[setup guide](local_invoice/docs/invoice-email.md) for Google OAuth and model settings.
+The app does not send emails; reminders can be copied or downloaded for review.
 
-## What each piece is
+## Development
 
-| Concern | Where it lives |
-| --- | --- |
-| Evaluation framework (accuracy, false-positive rate, injection-bypass rate, latency) | [evals/](evals/) — `dataset.jsonl`, `rubric.py`, `run_eval.py`, `thresholds.yaml` |
-| Structured output enforcement | [app/schemas.py](app/schemas.py) `Classification` + [app/classifier.py](app/classifier.py) `_parse` (Pydantic validation, fallback on invalid JSON) |
-| Input guardrails | [app/guardrails/input_guards.py](app/guardrails/input_guards.py) — size cap, prompt-injection detection (flag + isolate, not block) |
-| Output guardrails | [app/guardrails/output_guards.py](app/guardrails/output_guards.py) — drop invented indicators, scrub secret-like strings |
-| Containerization | [Dockerfile](Dockerfile) — non-root, healthcheck |
-| CI/CD (GitHub Actions) | [.github/workflows/ci.yml](.github/workflows/ci.yml), [.github/workflows/deploy.yml](.github/workflows/deploy.yml) |
-| Deploy to AWS | [infra/apprunner.yaml](infra/apprunner.yaml) — ECR + App Runner via GitHub OIDC |
-| Logging & monitoring | [app/observability.py](app/observability.py) — structlog JSON logs, Prometheus metrics at `/metrics` |
+For the API, with its virtual environment activated:
 
----
-
-## Architecture
-
-```
-                  ┌─────────────── FastAPI (app/main.py) ────────────────┐
-  POST /v1/classify│  request-id middleware → latency + structured logs  │
- ────────────────▶ │                                                     │
-                  │   Classifier.classify()   (app/classifier.py)        │
-                  │     1. input guardrails    input_guards.check_email  │
-                  │     2. wrap email as untrusted data in the prompt    │
-                  │     3. model call          llm.LLMClient.generate    │──▶ DeepSeek API
-                  │     4. parse + validate    Classification (Pydantic) │
-                  │     5. output guardrails   output_guards.check_...    │
-                  │     6. ClassifyResponse (+ guardrail trips, usage)   │
-                  └─────────────────────────────────────────────────────┘
-   GET /            HTML demo page
-   GET /healthz     liveness
-   GET /metrics     Prometheus: answer_requests_total{outcome},
-                    answer_latency_seconds, guardrail_trips_total{stage,code},
-                    model_tokens_total{model,kind}
-```
-
-Every response lists which guardrails fired; the same trips aggregate in
-`guardrail_trips_total`.
-
----
-
-## Quickstart
-
-```bash
-python -m venv .venv && source .venv/bin/activate   # needs Python 3.12+
-pip install -e ".[dev]"
-printf 'DEEPSEEK_API_KEY=sk-...\n' > .env
-
-uvicorn app.main:app --reload --port 8080           # open http://localhost:8080/
-
-curl -s localhost:8080/v1/classify -H 'content-type: application/json' \
-  -d '{"text":"From: security@paypa1-support.com\nSubject: locked\n\nVerify your account at http://paypa1-secure-login.com/verify and enter your password."}' | jq
-```
-
-Offline mode: `LLM_FAKE=true` runs the whole pipeline with a canned classifier
-(used by the tests; eval numbers are meaningless in this mode).
-
----
-
-## Tests, types, lint
-
-```bash
+```sh
 LLM_FAKE=true pytest --cov=app
 mypy app evals
-ruff check . && ruff format --check .
+ruff check .
+ruff format --check .
 ```
 
----
+For the Gmail app, from `local_invoice`:
+
+```sh
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+The tests use synthetic inputs and mocked providers. Local Gmail settings, tokens,
+and downloaded email drafts are excluded from version control.
 
 ## Evaluation
 
-```bash
+With a provider key configured, run:
+
+```sh
 python -m evals.run_eval --fail-under-thresholds
 ```
 
-- **Dataset** — [evals/dataset.jsonl](evals/dataset.jsonl): labelled emails
-  (phishing / legit / suspicious), including prompt-injection emails marked
-  `"injection": true`.
-- **Metrics** — accuracy, **false-positive rate** (legit flagged as phishing),
-  **invalid-JSON rate**, **injection-bypass rate** (injection email not caught as
-  phishing), p50 / p95 latency.
-- **Gate** — [evals/thresholds.yaml](evals/thresholds.yaml); `run_eval` exits
-  non-zero on any breach, failing the CI `eval-gate` job.
-- **Report** — `reports/eval_report.md` and `.json` (CI artifact).
-
----
-
-## Guardrail catalogue
-
-| Stage  | Code                 | Trigger | Action |
-| ------ | -------------------- | ------- | ------ |
-| input  | `empty`              | blank email | reject (fallback verdict) |
-| input  | `too_long`           | over `MAX_INPUT_CHARS` | reject (fallback verdict) |
-| input  | `injection_attempt`  | email body tries to steer the classifier | flag, isolate email in prompt, continue |
-| output | `invalid_json`       | model output not valid `Classification` | one retry, then safe `suspicious` fallback |
-| output | `invented_indicator` | an `indicators` entry not quoted from the email | drop it |
-| output | `secret_leak`        | secret-like string in the output | scrub it |
-
----
+The [dataset](evals/dataset.jsonl) includes labelled emails and injection attempts.
+The runner measures accuracy, false positives, invalid JSON, injection bypasses,
+and latency against [configured thresholds](evals/thresholds.yaml). Reports are
+written to `reports/`. This is a small seed dataset, not a production benchmark.
 
 ## Deployment
 
-`push to main` → **CI** (lint, types, unit tests, then `eval-gate` against the
-live model) → on success **Deploy** builds the image, pushes to ECR, triggers an
-App Runner deployment.
+The existing GitHub Actions workflow runs lint, types, and API tests. Pushes to
+`main` also run live evaluations. Successful CI can trigger an AWS App Runner
+deployment through ECR; the local Gmail app is excluded from that image.
 
-Required GitHub repo config: secrets `AWS_DEPLOY_ROLE_ARN` (OIDC role),
-`APPRUNNER_SERVICE_ARN`, `DEEPSEEK_API_KEY` (CI eval-gate only); variables
-`AWS_REGION`, `ECR_REPOSITORY`. Store the model key in AWS Secrets Manager and
-point [infra/apprunner.yaml](infra/apprunner.yaml) at its ARN.
+Deployment requires repository secrets `AWS_DEPLOY_ROLE_ARN`,
+`APPRUNNER_SERVICE_ARN`, and `DEEPSEEK_API_KEY`, plus variables `AWS_REGION` and
+`ECR_REPOSITORY`. Store the runtime model key in AWS Secrets Manager and configure
+its ARN in [infra/apprunner.yaml](infra/apprunner.yaml).
 
----
+## Project layout
 
-## Layout
-
-```
-app/
-  main.py            FastAPI app, middleware, routes
-  classifier.py      classify pipeline
-  llm.py             DeepSeek (OpenAI-compatible) client + test fake
-  schemas.py         ClassifyRequest / Classification / ClassifyResponse
-  guardrails/        input_guards.py, output_guards.py
-  observability.py   structlog + Prometheus
-  web/index.html     demo page
-evals/               dataset.jsonl, rubric.py, run_eval.py, thresholds.yaml
-tests/               guardrail, classifier, and API tests (LLM_FAKE)
-infra/               apprunner.yaml
-.github/workflows/   ci.yml, deploy.yml
+```text
+app/             API, classifier, guardrails, and browser demo
+evals/           Evaluation dataset, scoring, and thresholds
+tests/           API and guardrail tests
+local_invoice/   Local Gmail app, setup guide, and tests
+infra/           AWS App Runner configuration
+.github/         Test and deployment workflows
 ```
 
-## Roadmap / known cuts
-
-- Dataset is ~12 seed emails — grow to 100–200 real samples for meaningful numbers.
-- Injection detection is heuristic; pair with a dedicated classifier for production.
-- `indicators`-in-email check is substring-based; normalise URLs/whitespace harder.
-- Metrics are exposed but not scraped here — add a Prometheus/CloudWatch scrape
-  config in the target environment.
-- v2: swap the classifier for a CVE threat-intel RAG (retrieval + citations),
-  reusing the same eval / guardrail / CI shell.
+The API's injection checks are heuristic, and matching an indicator to email text
+does not establish that the interpretation is correct. Metrics are exposed for
+collection but no monitoring backend is configured here. The Gmail app's specific
+limits are documented in its [README](local_invoice/README.md#privacy-and-limits).
