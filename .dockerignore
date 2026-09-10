@@ -13,3 +13,8 @@ __pycache__
 .pytest_cache
 .mypy_cache
 .ruff_cache
+
+# Local-only Gmail app is not part of the hosted API image
+local_invoice/
+**/.credentials/
+**/.env

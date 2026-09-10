@@ -1,0 +1,22 @@
+name: Local invoice app
+on:
+  push:
+    paths: ["local_invoice/**", ".github/workflows/local-invoice.yml"]
+  pull_request:
+    paths: ["local_invoice/**", ".github/workflows/local-invoice.yml"]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: local_invoice/requirements-invoice.txt
+      - run: pip install -r requirements-invoice.txt
+        working-directory: local_invoice
+      - run: python -m unittest discover -s tests -v
+        working-directory: local_invoice
