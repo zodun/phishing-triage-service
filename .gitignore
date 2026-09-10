@@ -10,3 +10,11 @@ venv/
 .coverage
 coverage.xml
 reports/
+
+# Local Gmail app: never commit credentials or message artifacts
+.credentials/
+.gradio/
+.DS_Store
+gmail-client.json
+gmail-token.json
+*.eml

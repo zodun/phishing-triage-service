@@ -13,6 +13,20 @@ everything around it.
 > LLM provider: **DeepSeek** via its OpenAI-compatible API (`openai` SDK pointed at
 > `https://api.deepseek.com`). Swappable — `app/llm.py` is the only integration point.
 
+## Local Gmail and PDF app
+
+The repository also includes [a local Gmail invoice workflow](local_invoice/README.md).
+It finds emails with validated PDF attachments or direct PDF links, checks for
+phishing indicators, and prepares editable reminders for eligible overdue invoices.
+Run it locally with read-only Gmail access; it does not send email.
+
+```sh
+cd local_invoice
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-invoice.txt
+.venv/bin/python invoice_app.py
+```
+
 ---
 
 ## What each piece is
@@ -154,4 +168,3 @@ infra/               apprunner.yaml
   config in the target environment.
 - v2: swap the classifier for a CVE threat-intel RAG (retrieval + citations),
   reusing the same eval / guardrail / CI shell.
-```
