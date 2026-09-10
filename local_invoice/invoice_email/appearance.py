@@ -10,8 +10,7 @@ def workspace_css():
 HEADER = """<header class="app-header">
   <div class="app-brand"><span class="brand-mark" aria-hidden="true">↗</span>
     <span>Invoice<span class="brand-light">Email</span></span></div>
-  <div class="header-caption">Less chasing. Better follow-ups.</div>
-  <span class="local-badge">Local workspace</span>
+  <span class="local-badge">Local workspace · Read-only Gmail</span>
 </header>"""
 
 SETUP_GUIDE = """<div class="setup-heading"><span>1</span><h2>Connect your Google account</h2></div>

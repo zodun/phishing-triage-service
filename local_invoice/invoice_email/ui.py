@@ -243,7 +243,7 @@ def create_invoice_email_tab():
     setup_from_invoice = gr.State(False)
     gr.HTML(
         '<div class="simple-intro"><h1>Write a payment reminder</h1>'
-        "<p>Choose an invoice. Get an email you can check and edit.</p></div>"
+        "<p>Review the invoice, check for warning signs, and prepare a reminder you can edit.</p></div>"
     )
     steps = gr.HTML(_step_heading(1), elem_id="invoice-sidebar")
 
@@ -259,6 +259,7 @@ def create_invoice_email_tab():
             connect = gr.Button("Connect Gmail", variant="primary", visible=configured["gmail_ready"])
             connection_status = gr.Textbox(
                 label="Connection",
+                elem_id="connection-status",
                 interactive=False,
                 lines=2,
                 placeholder="You’ll choose your Google account in a new tab.",
@@ -306,7 +307,8 @@ def create_invoice_email_tab():
             gr.Markdown("## Choose an invoice\nFind a recent email with a PDF attachment or a direct PDF link.")
             search = gr.Button("Find invoice emails", variant="primary")
             status = gr.Textbox(
-                label="What’s happening",
+                label="Search and review status",
+                elem_id="workflow-status",
                 interactive=False,
                 value="Click Find invoice emails, select an email below, then click Check email.",
                 lines=3,
@@ -338,11 +340,15 @@ def create_invoice_email_tab():
             back_connect = gr.Button("← Back to connection")
 
         with gr.Column(elem_id="step-review", visible=False) as step_review:
-            gr.Markdown("## Review your email\nCheck the customer and amount, then change any wording you like.")
+            gr.Markdown(
+                "## Review the assessment\nCheck the findings and invoice details. Eligible reminders appear below for you to edit."
+            )
             phishing_status = gr.HTML("", elem_id="phishing-status")
             invoice_choice = gr.Dropdown(label="PDF to review", choices=[], interactive=True, visible=False)
-            invoice_summary = gr.Textbox(label="Invoice at a glance", interactive=False, lines=2)
-            review_status = gr.Textbox(label="Please check", lines=2, interactive=False)
+            invoice_summary = gr.Textbox(
+                label="Invoice at a glance", interactive=False, lines=2, elem_id="invoice-summary"
+            )
+            review_status = gr.Textbox(label="Review notes", lines=2, interactive=False, elem_id="review-status")
             with gr.Column(elem_id="invoice-composer") as composer:
                 recipient = gr.Textbox(label="To — customer email", placeholder="Customer’s email address")
                 subject = gr.Textbox(label="Subject")
@@ -571,7 +577,7 @@ def create_invoice_email_tab():
 def _step_heading(number):
     labels = ("Connect Gmail", "Choose an invoice", "Review your email")
     return (
-        '<ol class="simple-steps">'
+        '<ol class="simple-steps" aria-label="Invoice review progress">'
         + "".join(
             f'<li class="{"current" if i == number else "complete" if i < number else ""}"'
             f"{' aria-current=step' if i == number else ''}><span>{i}</span>{label}</li>"

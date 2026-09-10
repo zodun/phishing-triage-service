@@ -3,19 +3,19 @@
 ## Context
 
 A user at a desk in daylight reads invoice documents and edits correspondence in
-Safari. A bright working surface with a darker navigation area keeps text readable
-and gives the application stronger hierarchy.
+Safari. A bright, centered working surface keeps invoice text readable and makes the
+current step clear.
 
 ## Visual system
 
-Retain the existing project's blue accent family. Use an ink/navy sidebar, cool
-neutral page background, white document surfaces, and a clear blue primary action.
+Retain the existing project's blue accent family. Use a cool neutral page background, white document surfaces, a horizontal
+progress indicator, and a clear blue primary action.
 Represent tokens with OKLCH. Use system sans-serif typography, compact form labels,
 generous reading space, and 10–12px panel radii. Status colors have text labels.
 
 ## Structure
 
-A compact header and a centered, three-step flow: Connect Gmail, Choose an invoice,
+A compact header, a bounded 1120px workspace, and a centered, three-step flow: Connect Gmail, Choose an invoice,
 Review your email. Show only the current step. One-time setup is collapsed until
 requested; after configuration the first screen has a single Connect Gmail action.
 Search options, source documents, and extraction JSON are secondary disclosures.

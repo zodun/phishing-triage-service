@@ -1,125 +1,108 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Phishing Triage Service — demo</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Phishing Triage Service — Email review</title>
 <style>
-  :root {
-    --bg:#f6f7f9; --card:#fff; --ink:#1a1c1f; --muted:#5b6470; --line:#e3e6ea;
-    --accent:#2563eb; --chip:#eef1f5;
-    --phish:#b91c1c; --phish-bg:#fdeaea; --legit:#15803d; --legit-bg:#e7f6ec;
-    --susp:#b45309; --susp-bg:#fdf1e3;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg:#14161a; --card:#1c1f24; --ink:#e9ecef; --muted:#9aa4b0; --line:#2c313a;
-      --accent:#6ea8fe; --chip:#262b33;
-      --phish:#f6a5a5; --phish-bg:#3a1717; --legit:#6ee7a8; --legit-bg:#123024;
-      --susp:#f0b366; --susp-bg:#3a2a12;
-    }
-  }
-  * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink);
-    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
-  .wrap { max-width:780px; margin:0 auto; padding:32px 20px 64px; }
-  h1 { font-size:22px; margin:0 0 4px; }
-  .lede { color:var(--muted); margin:0 0 24px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
-    padding:18px; margin-bottom:16px; }
-  label { display:block; font-weight:600; margin-bottom:8px; }
-  textarea { width:100%; min-height:150px; resize:vertical; padding:10px 12px;
-    border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink);
-    font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; }
-  .row { display:flex; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap; }
-  button { font:inherit; cursor:pointer; border-radius:8px; border:1px solid var(--line);
-    background:var(--card); color:var(--ink); padding:8px 14px; }
-  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
-  button:disabled { opacity:.5; cursor:default; }
-  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-  .chip { background:var(--chip); border:none; font-size:13px; padding:6px 10px; color:var(--muted); }
-  .chip b { color:var(--ink); font-weight:600; }
-  .hint { color:var(--muted); font-size:13px; margin:4px 0 0; }
-  code { background:var(--chip); padding:1px 5px; border-radius:4px; font-size:13px; }
-
-  /* small section label inside the result card */
-  .slabel { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
-    color:var(--muted); margin:18px 0 6px; }
-  .slabel:first-child { margin-top:0; }
-
-  #result { display:none; }
-  .verdict { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
-  .tag { font-size:15px; font-weight:700; padding:5px 12px; border-radius:999px; text-transform:uppercase;
-    letter-spacing:.03em; }
-  .tag.phishing { background:var(--phish-bg); color:var(--phish); }
-  .tag.legit { background:var(--legit-bg); color:var(--legit); }
-  .tag.suspicious { background:var(--susp-bg); color:var(--susp); }
-  .conf { color:var(--muted); font-size:14px; }
-  .bar { height:6px; border-radius:999px; background:var(--chip); margin:10px 0 0; overflow:hidden; }
-  .bar > i { display:block; height:100%; background:var(--accent); }
-  .reason { margin:0; }
-  .ind { margin:0; padding-left:18px; }
-  .ind li { font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--muted); }
-  .guards { list-style:none; padding:0; margin:0; }
-  .guards li { display:flex; gap:8px; padding:8px 0; border-top:1px solid var(--line); font-size:14px; }
-  .guards li:first-child { border-top:0; }
-  .guards li::before { content:"🛡"; }
-  .meta { color:var(--muted); font-size:13px; margin-top:18px; }
+:root { --bg:#f5f7fa; --surface:#fff; --ink:#172435; --muted:#536276; --line:#d4dce6; --accent:#2455c7; --soft:#eaf0fd; --danger:#a62332; --danger-bg:#fff0f1; --success:#176443; --success-bg:#eaf7ef; --warning:#825008; --warning-bg:#fff5df; }
+* { box-sizing:border-box; }
+[hidden] { display:none !important; }
+body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+button,textarea { font:inherit; }
+a { color:var(--accent); text-underline-offset:4px; }
+button,a,textarea,summary { -webkit-tap-highlight-color:transparent; }
+:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
+.wrap { width:min(1180px,100%); margin:auto; padding:0 32px; }
+.topbar { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:22px 0; border-bottom:1px solid var(--line); }
+.brand { display:flex; align-items:center; gap:12px; font-size:18px; font-weight:700; letter-spacing:-.02em; }
+.mark { display:grid; place-items:center; width:34px; height:38px; background:var(--accent); color:#fff; border-radius:8px; }
+.topbar a { font-size:13px; }
+.intro { padding:44px 0 30px; max-width:720px; }
+h1 { margin:0 0 12px; font-size:clamp(28px,4vw,40px); line-height:1.15; font-weight:650; letter-spacing:-.035em; text-wrap:balance; }
+.intro p { margin:0; color:var(--muted); font-size:16px; max-width:65ch; }
+.workspace { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:24px; align-items:start; }
+.panel { min-width:0; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:26px; }
+.panel-heading { display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:18px; }
+h2 { font-size:18px; margin:0; font-weight:650; }
+label { display:block; font-weight:600; margin-bottom:4px; }
+.hint { color:var(--muted); font-size:13px; margin:0; }
+textarea { display:block; width:100%; min-height:290px; margin-top:14px; padding:16px; resize:vertical; border:1px solid var(--line); border-radius:8px; color:var(--ink); background:var(--bg); font:14px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; }
+textarea::placeholder { color:var(--muted); opacity:1; }
+.input-meta { display:flex; justify-content:space-between; gap:10px; margin:8px 0 20px; }
+button { cursor:pointer; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink); padding:10px 16px; min-height:44px; font-weight:600; transition:background-color 160ms ease; }
+button:hover { background:var(--soft); }
+button.primary { background:var(--accent); border-color:var(--accent); color:white; }
+button.primary:hover { filter:brightness(.9); }
+button:disabled { opacity:.55; cursor:default; }
+.actions { display:flex; gap:10px; flex-wrap:wrap; }
+#status:not(:empty) { padding:12px 14px; margin:16px 0 0; border-radius:7px; background:var(--soft); font-size:14px; }
+#status.error { background:var(--danger-bg); color:var(--danger); }
+.examples { margin-top:26px; padding-top:20px; border-top:1px solid var(--line); }
+.chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.chip { font-size:12px; font-weight:500; padding:7px 10px; min-height:36px; }
+.result-panel { min-height:470px; }
+.empty { padding:54px 0 40px; max-width:36ch; margin:auto; text-align:center; }
+.empty-symbol { display:grid; place-items:center; width:52px; height:52px; margin:0 auto 20px; background:var(--soft); color:var(--accent); border-radius:12px; font-size:25px; }
+.empty h3 { font-size:18px; margin:0 0 8px; }
+.empty p { font-size:14px; color:var(--muted); margin:0; }
+.verdict { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:22px 0 12px; }
+.tag { border-radius:6px; padding:6px 12px; font-weight:700; font-size:17px; }
+.tag.phishing { background:var(--danger-bg); color:var(--danger); }
+.tag.legit { background:var(--success-bg); color:var(--success); }
+.tag.suspicious { background:var(--warning-bg); color:var(--warning); }
+.conf { font-size:13px; color:var(--muted); }
+.bar { height:5px; border-radius:5px; background:var(--line); overflow:hidden; }
+.bar i { display:block; height:100%; background:var(--accent); }
+.slabel { margin:26px 0 8px; font-size:14px; font-weight:650; }
+.reason { margin:0; overflow-wrap:anywhere; }
+.ind { padding:0; list-style:none; margin:0; }
+.ind li { padding:10px 12px; margin-top:8px; border-radius:6px; background:var(--bg); font:13px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+.guards { padding-left:20px; font-size:14px; }
+.guards li { margin:8px 0; overflow-wrap:anywhere; }
+.result-note { border-top:1px solid var(--line); padding-top:18px; margin-top:24px; }
+.meta { margin-top:20px; font-size:12px; color:var(--muted); overflow-wrap:anywhere; }
+summary { cursor:pointer; font-weight:600; }
+footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; margin:30px 0; font-size:12px; color:var(--muted); }
+footer p { margin:0; max-width:70ch; }
+@media(prefers-color-scheme:dark) { :root { --bg:#131b26; --surface:#1b2634; --ink:#edf2f8; --muted:#b0bfd0; --line:#3e5066; --accent:#8cafff; --soft:#273956; --danger:#ffa7b0; --danger-bg:#442730; --success:#93ddb4; --success-bg:#213d32; --warning:#f3ce88; --warning-bg:#413823; } button.primary,.mark { color:#102043; } }
+@media(max-width:800px) { .workspace { grid-template-columns:minmax(0,1fr); } .wrap { padding:0 20px; } .intro { padding:32px 0 24px; } .result-panel { min-height:280px; } .empty { padding:22px 0; } }
+@media(max-width:420px) { .wrap { padding:0 14px; } .panel { padding:20px; } .topbar { gap:10px; } .brand { font-size:16px; } .input-meta { flex-wrap:wrap; } textarea { min-height:240px; font-size:16px; } }
+@media(prefers-reduced-motion:reduce) { * { transition:none !important; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Phishing Triage Service</h1>
-  <p class="lede">
-    Paste an email and the service decides <b>phishing</b>, <b>legit</b>, or
-    <b>suspicious</b> — with a plain reason and the exact words from the email
-    that drove the verdict. It also checks the AI's own answer: made-up evidence
-    is dropped, and any instructions hidden inside the email are ignored.
-  </p>
-
-  <div class="card">
-    <label for="q">Paste an email (headers and body)</label>
-    <textarea id="q" placeholder="From: ...&#10;Subject: ...&#10;&#10;body text"></textarea>
-    <div class="row">
-      <button class="primary" id="go">Check this email</button>
-      <span class="hint" id="status"></span>
-    </div>
-    <p class="hint">Or load an example:</p>
-    <div class="chips" id="chips"></div>
-  </div>
-
-  <div class="card" id="result">
-    <div class="slabel">Verdict</div>
-    <div class="verdict">
-      <span class="tag" id="tag"></span>
-      <span class="conf" id="conf"></span>
-    </div>
-    <div class="bar"><i id="barfill"></i></div>
-
-    <div class="slabel">Why</div>
-    <p class="reason" id="reason"></p>
-
-    <div id="indwrap">
-      <div class="slabel">Evidence quoted from the email</div>
-      <ul class="ind" id="ind"></ul>
-    </div>
-
-    <div id="guardwrap">
-      <div class="slabel">Automated checks that ran</div>
-      <ul class="guards" id="guards"></ul>
-    </div>
-
-    <div class="meta" id="meta"></div>
-  </div>
-
-  <div class="card">
-    <p class="hint">
-      For developers: <code>POST /v1/classify</code> ·
-      <code>GET /healthz</code> · <code>GET /metrics</code> · <code>GET /docs</code>.
-    </p>
-  </div>
+<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true">✓</span>Phishing Triage</div><a href="/docs">API documentation</a></header>
+<main>
+<div class="intro"><h1>A closer look at suspicious email.</h1><p>Check an email for phishing signals. Review the assessment, the reasoning, and the evidence before deciding what to do next.</p></div>
+<div class="workspace">
+<form class="panel" id="email-form" novalidate>
+<div class="panel-heading"><h2>Email to review</h2></div>
+<label for="q">Email content</label><p class="hint" id="input-help">Include the sender, subject, and full message for context.</p>
+<textarea id="q" aria-describedby="input-help count status" placeholder="From: sender@example.com&#10;Subject: Your email subject&#10;&#10;Paste the message here…" spellcheck="false"></textarea>
+<div class="input-meta"><span class="hint" id="count">0 / 40,000 characters</span><span class="hint">⌘ / Ctrl + Enter to check</span></div>
+<div class="actions"><button class="primary" id="go" type="submit">Check email</button><button id="clear" type="button">Clear</button></div>
+<p id="status" role="status" aria-live="polite" aria-atomic="true"></p>
+<div class="examples"><p class="hint">Try a sample email</p><div class="chips" id="chips"></div></div>
+</form>
+<section class="panel result-panel" aria-labelledby="result-heading" aria-busy="false" id="result-panel">
+<div class="panel-heading"><h2 id="result-heading">Assessment</h2><span class="hint">AI-assisted review</span></div>
+<div class="empty" id="empty"><div class="empty-symbol" aria-hidden="true">↳</div><h3 id="empty-title">Start with an email</h3><p id="empty-copy">Paste a message or choose a sample. Your assessment and quoted evidence will appear here.</p></div>
+<div id="result" hidden tabindex="-1" aria-label="Email assessment">
+<div class="verdict"><span class="tag" id="tag"></span><span class="conf" id="conf"></span></div><div class="bar" aria-hidden="true"><i id="barfill"></i></div>
+<h3 class="slabel">Why this assessment</h3><p class="reason" id="reason"></p>
+<div id="indwrap"><h3 class="slabel">Evidence from the email</h3><ul class="ind" id="ind"></ul></div>
+<div id="guardwrap"><h3 class="slabel">Review notes</h3><ul class="guards" id="guards"></ul></div>
+<p class="hint result-note">An assessment is not a guarantee of safety. Verify unexpected requests using contact details you already trust.</p>
+<details class="meta"><summary>Technical details</summary><p id="meta"></p></details>
 </div>
-
+</section>
+</div>
+</main>
+<footer><p>Email content is sent to the configured AI provider for analysis.</p><span>Review thoughtfully. Act with confidence.</span></footer>
+</div>
 <script>
 const EXAMPLES = [
   ["Fake account alert",
@@ -164,80 +147,99 @@ const GUARD_LABELS = {
 };
 
 const $ = id => document.getElementById(id);
-
+let busy = false;
+function resetResult() {
+  $("result").hidden = true;
+  $("empty").hidden = false;
+  $("empty-title").textContent = "Start with an email";
+  $("empty-copy").textContent = "Paste a message or choose a sample. Your assessment and quoted evidence will appear here.";
+  $("status").textContent = "";
+  $("status").className = "";
+  $("q").removeAttribute("aria-invalid");
+  $("count").textContent = Array.from($("q").value).length.toLocaleString() + " / 40,000 characters";
+}
 EXAMPLES.forEach(([label, text]) => {
   const b = document.createElement("button");
   b.className = "chip";
-  b.innerHTML = `<b>${label}</b>`;
-  b.onclick = () => { $("q").value = text; $("q").focus(); };
+  b.type = "button";
+  b.textContent = label;
+  b.onclick = () => { if (busy) return; $("q").value = text; resetResult(); $("q").focus(); };
   $("chips").appendChild(b);
 });
-
+function setBusy(value) {
+  busy = value;
+  for (const id of ["go", "clear", "q"]) $(id).disabled = value;
+  for (const button of $("chips").children) button.disabled = value;
+  $("go").textContent = value ? "Checking email…" : "Check email";
+  $("result-panel").setAttribute("aria-busy", String(value));
+}
+function showError(message) {
+  $("status").className = "error";
+  $("status").textContent = message;
+}
 async function go() {
+  if (busy) return;
+  resetResult();
   const text = $("q").value.trim();
-  if (!text) { $("q").focus(); return; }
-  $("go").disabled = true;
-  $("status").textContent = "Checking…";
-  $("result").style.display = "none";
+  if (!text || Array.from(text).length > 40000) {
+    showError(!text ? "Paste an email or choose a sample to begin." : "This email is too long. Shorten it to 40,000 characters and try again.");
+    $("q").setAttribute("aria-invalid", "true");
+    $("q").focus();
+    return;
+  }
+  setBusy(true);
+  $("status").textContent = "Checking the message and reviewing the evidence…";
+  $("empty-title").textContent = "Reviewing your email";
+  $("empty-copy").textContent = "The assessment will appear here when the check is complete.";
   try {
     const res = await fetch("/v1/classify", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text }),
+      method: "POST", headers: {"content-type":"application/json"},
+      body: JSON.stringify({text}), signal: AbortSignal.timeout(120000),
     });
-    if (res.status === 422) {
-      render({ label: "suspicious", confidence: 0, reason: "The input was empty or too large, so it was rejected before the service ran.", indicators: [], guardrails: [], usage: {}, latency_ms: 0, model: "—" });
-      return;
+    if (!res.ok) {
+      if (res.status === 422) throw new Error("The email could not be accepted. Check its length and try again.");
+      if (res.status === 429) throw new Error("Too many requests. Wait a moment and try again.");
+      throw new Error("The assessment service is unavailable. Please try again shortly.");
     }
-    render(await res.json());
+    const d = await res.json();
+    if (!d || !["phishing", "legit", "suspicious"].includes(d.label) ||
+        !Number.isFinite(d.confidence) || d.confidence < 0 || d.confidence > 1 ||
+        typeof d.reason !== "string" || !Array.isArray(d.indicators) ||
+        !d.indicators.every(s => typeof s === "string") || !Array.isArray(d.guardrails) ||
+        !d.guardrails.every(g => g && typeof g.stage === "string" && typeof g.code === "string")) {
+      throw new Error("The service did not return a valid result. Please try again.");
+    }
+    render(d);
   } catch (e) {
-    $("status").textContent = "Request failed: " + e;
-  } finally {
-    $("go").disabled = false;
-  }
+    resetResult();
+    showError(e.name === "TimeoutError" ? "This check timed out. Please try again." :
+      e instanceof TypeError ? "Could not connect. Check your connection and try again." :
+      e instanceof SyntaxError ? "The service did not return a valid result. Please try again." : e.message);
+  } finally { setBusy(false); }
 }
-
 function render(d) {
-  $("status").textContent = "";
-  const pct = Math.round((d.confidence || 0) * 100);
+  const pct = Math.round(d.confidence * 100);
   $("tag").className = "tag " + d.label;
-  $("tag").textContent = d.label;
-  $("conf").textContent = pct + "% confident";
+  $("tag").textContent = {phishing:"Phishing", legit:"Likely legitimate", suspicious:"Suspicious"}[d.label];
+  $("conf").textContent = pct + "% model confidence";
   $("barfill").style.width = pct + "%";
   $("reason").textContent = d.reason;
-
-  const indicators = d.indicators || [];
-  $("indwrap").style.display = indicators.length ? "block" : "none";
-  const ind = $("ind");
-  ind.innerHTML = "";
-  indicators.forEach(s => {
-    const li = document.createElement("li");
-    li.textContent = "“" + s + "”";
-    ind.appendChild(li);
-  });
-
-  const guardrails = d.guardrails || [];
-  $("guardwrap").style.display = guardrails.length ? "block" : "none";
-  const guards = $("guards");
-  guards.innerHTML = "";
-  guardrails.forEach(g => {
-    const li = document.createElement("li");
-    li.append(GUARD_LABELS[g.stage + "/" + g.code] || (g.stage + "/" + g.code));
-    guards.appendChild(li);
-  });
-
-  const u = d.usage || {};
-  const total = (u.input_tokens || 0) + (u.output_tokens || 0);
-  const timePart = d.latency_ms
-    ? `Decided in ${(d.latency_ms / 1000).toFixed(1)} s`
-    : "Rejected instantly — no AI call";
-  const tokPart = total ? ` · ${total} tokens` : "";
-  $("meta").textContent = `${timePart}${tokPart} · model ${d.model}`;
-  $("result").style.display = "block";
+  $("indwrap").hidden = !d.indicators.length;
+  $("ind").innerHTML = "";
+  d.indicators.forEach(s => { const li = document.createElement("li"); li.textContent = "“" + s + "”"; $("ind").appendChild(li); });
+  $("guardwrap").hidden = !d.guardrails.length;
+  $("guards").innerHTML = "";
+  d.guardrails.forEach(g => { const li = document.createElement("li"); li.textContent = GUARD_LABELS[g.stage + "/" + g.code] || g.stage + "/" + g.code; $("guards").appendChild(li); });
+  $("meta").textContent = `Model: ${d.model || "Not reported"} · Processing time: ${Number.isFinite(d.latency_ms) ? (d.latency_ms / 1000).toFixed(1) + " s" : "Not reported"}`;
+  $("empty").hidden = true;
+  $("result").hidden = false;
+  $("status").textContent = "Review complete. " + $("tag").textContent + ".";
+  $("result").focus();
 }
-
-$("go").onclick = go;
-$("q").addEventListener("keydown", e => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") go(); });
+$("email-form").addEventListener("submit", e => { e.preventDefault(); go(); });
+$("clear").onclick = () => { if (busy) return; $("q").value = ""; resetResult(); $("q").focus(); };
+$("q").addEventListener("input", resetResult);
+$("q").addEventListener("keydown", e => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); go(); } });
 </script>
 </body>
 </html>

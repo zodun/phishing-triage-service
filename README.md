@@ -91,6 +91,7 @@ Offline mode: `LLM_FAKE=true` runs the whole pipeline with a canned classifier
 ## Tests, types, lint
 
 ```bash
+node --test tests/ui.test.cjs  # Node 22+: browser interaction regression tests
 LLM_FAKE=true pytest --cov=app
 mypy app evals
 ruff check . && ruff format --check .

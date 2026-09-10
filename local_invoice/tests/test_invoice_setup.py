@@ -129,7 +129,7 @@ class WorkspaceTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("invoice-message-results", props)
         self.assertTrue(props["invoice-message-results"]["visible"])
         status = next(
-            item["props"] for item in app.config["components"] if item["props"].get("label") == "What’s happening"
+            item["props"] for item in app.config["components"] if item["props"].get("elem_id") == "workflow-status"
         )
         self.assertIn("Find invoice emails", status["value"])
         search = next(fn for fn in app.fns.values() if fn.name == "_search")
