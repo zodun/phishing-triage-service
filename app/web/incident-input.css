@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer utilities {
+.icon { width:1em; height:1em; flex-shrink:0; }
+.text-on-error { color:#ffdad6; }
+}
+html { scroll-padding-top:84px; scroll-behavior:smooth; }
+body { overflow-x:hidden; }
+main > div { max-width:1000px; margin-inline:auto; }
+header > div, nav > div { max-width:1032px; margin-inline:auto; }
+.demo-banner { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 0; font:10px/1.5 'JetBrains Mono',monospace; color:#bcc9cd; }
+.demo-banner a { color:#4cd7f6; flex-shrink:0; font-weight:600; }
+h1 { white-space:normal!important; }
+button, a { -webkit-tap-highlight-color:transparent; }
+button:focus-visible,a:focus-visible { outline:2px solid #4cd7f6; outline-offset:4px; }
+#feedback { position:fixed; bottom:200px; left:50%; transform:translateX(-50%); z-index:100; width:min(90%,480px); background:#313540; color:#dfe2f1; border:1px solid #4cd7f6; padding:16px; border-radius:8px; box-shadow:0 8px 40px #0008; }
+.fixed.bottom-16 { bottom:calc(64px + env(safe-area-inset-bottom)); }
+main { padding-bottom:calc(96px + env(safe-area-inset-bottom))!important; }
+@media(min-width:1040px) { .fixed.bottom-16 { left:50%; transform:translateX(-50%); max-width:1032px; width:100%; } }
+@media(max-width:480px) { h2 { font-size:12px!important; } h2 + span { font-size:8px!important; } .items-center.justify-between { gap:6px; } code { overflow-wrap:anywhere; } .truncate { max-width:100%; } .demo-banner { font-size:9px; } }
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; scroll-behavior:auto!important; transition:none!important; } }
+@media(max-width:480px) {
+  main .flex > div { min-width:0; }
+  main .flex.items-center.justify-between { flex-wrap:wrap; }
+  main .grid > div { min-width:0; }
+  main .font-label-md { overflow-wrap:anywhere; }
+  main h2 { white-space:normal; }
+  main .truncate { white-space:normal; overflow-wrap:anywhere; }
+  main .grid.grid-cols-2 .flex { flex-wrap:wrap; }
+  header .tracking-wider { font-size:9px; }
+}
+button.bg-error.text-on-error { color:#690005; }
