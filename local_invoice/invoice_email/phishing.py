@@ -19,7 +19,7 @@ class PhishingAssessment(BaseModel):
         return {
             "suspicious": "Suspicious — possible phishing",
             "no_obvious_signs": "No obvious warning signs",
-            "unable_to_assess": "Unable to assess",
+            "unable_to_assess": "Be careful — check incomplete",
         }[self.status]
 
     @property

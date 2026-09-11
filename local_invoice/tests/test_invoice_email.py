@@ -447,7 +447,7 @@ class UITests(unittest.IsolatedAsyncioTestCase):
             create_invoice_email_tab()
         self.assertTrue(app.config["dependencies"])
         buttons = [item["props"].get("value") for item in app.config["components"] if item["type"] == "button"]
-        self.assertIn("Check email", buttons)
+        self.assertIn("Check this email", buttons)
         self.assertNotIn("Check email & write reminder", buttons)
         reminder = build_reminder(invoice(), source_text=TEXT, today=date(2026, 9, 9))
         values = review_result(

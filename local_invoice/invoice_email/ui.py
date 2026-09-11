@@ -127,12 +127,17 @@ def _connect():
         executor.shutdown(wait=False)
 
 
-def _search(query, limit):
+def _web_mailbox(request):
+    from .web_auth import mailbox
+    return mailbox(request)
+
+
+def _search(query, limit, request: gr.Request = None):
     from googleapiclient.errors import HttpError
 
     try:
-        messages = connect_gmail().search(query, limit)
-        choices = [(f"{m.date} | {m.subject} | {m.sender}", m.id) for m in messages]
+        messages = (_web_mailbox(request) if request else connect_gmail()).search(query, limit)
+        choices = [(f"{m.sender} · {m.subject} · {m.date} · {len(m.attachments)} PDF attachment(s)", m.id) for m in messages]
         if not messages:
             return gr.update(choices=[], value=None), (
                 "No emails with a valid PDF attachment or direct PDF link matched your search. "
@@ -167,15 +172,15 @@ def _search(query, limit):
         ), "Gmail search failed. Check the connection and search terms, then retry."
 
 
-def _analyze(message_id, signature):
+def _analyze(message_id, signature, request: gr.Request = None):
     empty = ("", [], gr.update(choices=[], value=None))
     try:
         if not message_id:
             raise ValueError("Select a Gmail message first.")
         if not setup_status()["model_ready"]:
-            raise ValueError("Add your AI key using “Add my AI key” below, then click Check email again.")
+            raise ValueError("Invoice reading has not been configured for this installation.")
         extractor = InvoiceExtractor.from_env()
-        mailbox = connect_gmail()
+        mailbox = _web_mailbox(request) if request else connect_gmail()
         message = mailbox.get_message(message_id)
         if not message.attachments and pdf_links(message):
             risk = scan_message(message)
@@ -235,7 +240,7 @@ def _analyze_upload(path, context, signature):
         if not path:
             raise ValueError("Choose a PDF invoice first.")
         if not setup_status()["model_ready"]:
-            raise ValueError("Add your AI key in Connection settings to read this PDF. Gmail setup is not needed.")
+            raise ValueError("Invoice reading has not been configured for this installation.")
         document = Path(path)
         if document.stat().st_size > MAX_PDF_BYTES:
             raise ValueError("PDF exceeds the 15 MB attachment limit.")
@@ -292,26 +297,28 @@ def create_invoice_email_tab(workspace=False):
         apply_default_css=False,
     )
     steps = gr.HTML(_step_heading(1), elem_id="invoice-sidebar", apply_default_css=False)
+    account_bar = gr.HTML("", elem_id="account-bar", apply_default_css=False)
 
     with gr.Column(elem_id="invoice-shell"):
         with gr.Column(elem_id="step-connect", visible=True) as step_connect:
-            with gr.Accordion("Upload a PDF — no Gmail setup needed", open=True, elem_id="direct-upload"):
-                gr.Markdown("Read an invoice directly. Only an AI connection is required; the PDF text is sent to that provider.")
+            with gr.Accordion("Or upload a PDF invoice", open=False, elem_id="direct-upload"):
+                gr.Markdown("Read an invoice directly. Its text is sent to this installation’s configured AI provider.")
                 upload_pdf = gr.File(label="PDF invoice", file_types=[".pdf"], type="filepath", height=110)
                 upload_context = gr.Textbox(label="Email context (optional)", lines=2, placeholder="Paste the email that accompanied this invoice.")
                 upload_check = gr.Button("Read PDF & prepare reminder", variant="primary")
                 upload_status = gr.Markdown("", elem_id="upload-status")
-                upload_setup = gr.Button("Set up invoice reading", visible=not configured["model_ready"])
-            gr.Markdown("## Connect your email\nWe’ll look for invoice attachments in your Gmail account.")
-            setup_hint = gr.Markdown(_setup_explanation(configured))
+                upload_setup = gr.Button("Set up invoice reading", visible=False)
+            gr.Markdown("## Check invoice emails safely\nConnect Gmail to find invoice emails and check them for phishing signs.")
+            web_connection = gr.HTML("", elem_id="web-connection", apply_default_css=False)
+            setup_hint = gr.Markdown(_setup_explanation(configured), visible=False)
             start_setup = gr.Button(
                 "Set up Gmail",
                 variant="primary",
-                visible=not (configured["gmail_ready"] and configured["model_ready"]),
+                visible=False,
             )
-            connect = gr.Button("Connect Gmail", variant="primary", visible=configured["gmail_ready"])
+            connect = gr.Button("Connect Gmail", variant="primary", visible=False)
             connection_status = gr.Textbox(
-                label="Connection",
+                label="Connection", visible=False,
                 elem_id="connection-status",
                 interactive=False,
                 lines=2,
@@ -319,7 +326,7 @@ def create_invoice_email_tab(workspace=False):
             )
             sign_in_link = gr.HTML("", apply_default_css=False)
             with gr.Accordion(
-                "Connection settings", open=False, elem_id="account-setup"
+                "Connection settings", open=False, visible=False, elem_id="account-setup"
             ) as setup_panel:
                 gr.Markdown(
                     "**Saved on this computer.** PDF upload only needs invoice reading. Add Google access if you want to search Gmail."
@@ -393,8 +400,8 @@ def create_invoice_email_tab(workspace=False):
                             interactive=True,
                             info="Click Find invoice emails to populate this list, then choose one.",
                         )
-                        analyze = gr.Button("Check email", variant="primary")
-                    with gr.Column(visible=not configured["model_ready"], elem_id="invoice-reading-setup") as reading_setup:
+                        analyze = gr.Button("Check this email", variant="primary")
+                    with gr.Column(visible=False, elem_id="invoice-reading-setup") as reading_setup:
                         gr.Markdown(
                             "**One step left: add your AI key.**\n\n"
                             "Gmail gives us access to the attachment. The AI reads it and prepares your reminder. "
@@ -402,7 +409,7 @@ def create_invoice_email_tab(workspace=False):
                             elem_id="invoice-reading-help",
                         )
                         reading_setup_button = gr.Button("Add my AI key")
-                    with gr.Accordion("Search options and email signature", open=False):
+                    with gr.Accordion("Advanced options", open=False):
                         query = gr.Textbox(
                             label="Gmail search",
                             value="in:inbox newer_than:90d",
@@ -521,10 +528,19 @@ def create_invoice_email_tab(workspace=False):
             _step_heading(number),
         )
 
-    connection = run_locked(connect, _connect, None, [connection_status, sign_in_link])
-    connection.then(
-        lambda message: show_step(2 if message.startswith("Connected to ") else 1), connection_status, stage_outputs
-    )
+    def restore_connection(request: gr.Request):
+        from .web_auth import connection_html, session
+        connected = session(request)
+        return ("" if connected else connection_html(request)), (connection_html(request) if connected else ""), *show_step(2 if connected else 1)
+
+    from gradio.context import get_blocks_context
+    get_blocks_context().root_block.load(restore_connection, outputs=[web_connection, account_bar, *stage_outputs])
+
+    if not workspace:
+        connection = run_locked(connect, _connect, None, [connection_status, sign_in_link])
+        connection.then(
+            lambda message: show_step(2 if message.startswith("Connected to ") else 1), connection_status, stage_outputs
+        )
     run_locked(search, _search, [query, limit], [message_choice, status])
     message_choice.change(lambda: ([], *review_result(None, [])), outputs=[analyses, *review_outputs])
     analysis_event = run_locked(
@@ -563,7 +579,7 @@ def create_invoice_email_tab(workspace=False):
         amount = " ".join(part for part in (value.currency, value.amount_due) if part)
         return (
             f"{value.customer_name or 'Customer not found'} · Invoice {value.invoice_number or 'number not found'}\n"
-            + f"Amount: {amount or 'not found'} · Due: {value.due_date or 'date not found'}"
+            + f"Amount: {amount or 'not found'} · Due: {value.due_date or 'date not found'}\nStatus: {value.payment_status}"
         )
 
     invoice_choice.change(review_result, [invoice_choice, analyses], review_outputs).then(
@@ -608,75 +624,76 @@ def create_invoice_email_tab(workspace=False):
         outputs=[*stage_outputs, analyses, *review_outputs],
         queue=False,
     )
-    provider.change(
-        lambda value: (
-            gr.update(visible=value == "azure"),
-            {"openai": "gpt-4.1-mini", "deepseek": "deepseek-chat", "azure": ""}[value],
-            gr.update(
-                label={"openai": "OpenAI API key", "deepseek": "DeepSeek API key", "azure": "Azure API key"}[value]
+    if not workspace:
+        provider.change(
+            lambda value: (
+                gr.update(visible=value == "azure"),
+                {"openai": "gpt-4.1-mini", "deepseek": "deepseek-chat", "azure": ""}[value],
+                gr.update(
+                    label={"openai": "OpenAI API key", "deepseek": "DeepSeek API key", "azure": "Azure API key"}[value]
+                ),
             ),
-        ),
-        provider,
-        [endpoint, model, api_key],
-    )
-
-    def setup_updates():
-        current = setup_status()
-        ready = current["gmail_ready"] and current["model_ready"]
-        return (
-            _setup_explanation(current),
-            gr.update(visible=not ready),
-            gr.update(visible=current["gmail_ready"]),
-            gr.update(open=not ready),
+            provider,
+            [endpoint, model, api_key],
         )
 
-    def save_google(path):
-        try:
-            message = import_google_client(path)
+        def setup_updates():
+            current = setup_status()
+            ready = current["gmail_ready"] and current["model_ready"]
             return (
-                message,
-                setup_status()["summary"],
-                None,
-                gr.update(open=False),
-                gr.update(open=True),
-                *setup_updates(),
+                _setup_explanation(current),
+                gr.update(visible=not ready),
+                gr.update(visible=current["gmail_ready"]),
+                gr.update(open=not ready),
             )
-        except (ValueError, OSError) as exc:
-            message = str(exc) if isinstance(exc, ValueError) else "Could not save the file on this computer."
-            return message, setup_status()["summary"], None, gr.update(), gr.update(), *setup_updates()
 
-    def save_ai(provider_value, key, deployment, resource):
-        try:
-            message = save_model_settings(provider_value, key, deployment, resource)
-            return message, setup_status()["summary"], "", *setup_updates()
-        except (ValueError, OSError) as exc:
-            message = str(exc) if isinstance(exc, ValueError) else "Could not save your settings on this computer."
-            return message, setup_status()["summary"], "", *setup_updates()
+        def save_google(path):
+            try:
+                message = import_google_client(path)
+                return (
+                    message,
+                    setup_status()["summary"],
+                    None,
+                    gr.update(open=False),
+                    gr.update(open=True),
+                    *setup_updates(),
+                )
+            except (ValueError, OSError) as exc:
+                message = str(exc) if isinstance(exc, ValueError) else "Could not save the file on this computer."
+                return message, setup_status()["summary"], None, gr.update(), gr.update(), *setup_updates()
 
-    setup_controls = [setup_hint, start_setup, connect, setup_panel]
-    run_locked(
-        import_client,
-        save_google,
-        client_file,
-        [import_status, setup_summary, client_file, google_panel, ai_panel, *setup_controls],
-    )
-    saved_model = run_locked(
-        save_model,
-        save_ai,
-        [provider, api_key, model, endpoint],
-        [model_status, setup_summary, api_key, *setup_controls],
-    )
+        def save_ai(provider_value, key, deployment, resource):
+            try:
+                message = save_model_settings(provider_value, key, deployment, resource)
+                return message, setup_status()["summary"], "", *setup_updates()
+            except (ValueError, OSError) as exc:
+                message = str(exc) if isinstance(exc, ValueError) else "Could not save your settings on this computer."
+                return message, setup_status()["summary"], "", *setup_updates()
 
-    def finish_model_setup(return_to_invoice):
-        ready = setup_status()["model_ready"]
-        stage = show_step(2) if ready and return_to_invoice else (gr.update(), gr.update(), gr.update(), gr.update())
-        return (*stage, gr.update(visible=not ready), False if ready else return_to_invoice)
+        setup_controls = [setup_hint, start_setup, connect, setup_panel]
+        run_locked(
+            import_client,
+            save_google,
+            client_file,
+            [import_status, setup_summary, client_file, google_panel, ai_panel, *setup_controls],
+        )
+        saved_model = run_locked(
+            save_model,
+            save_ai,
+            [provider, api_key, model, endpoint],
+            [model_status, setup_summary, api_key, *setup_controls],
+        )
 
-    saved_model.then(finish_model_setup, setup_from_invoice, [*stage_outputs, reading_setup, setup_from_invoice])
+        def finish_model_setup(return_to_invoice):
+            ready = setup_status()["model_ready"]
+            stage = show_step(2) if ready and return_to_invoice else (gr.update(), gr.update(), gr.update(), gr.update())
+            return (*stage, gr.update(visible=not ready), False if ready else return_to_invoice)
+
+        saved_model.then(finish_model_setup, setup_from_invoice, [*stage_outputs, reading_setup, setup_from_invoice])
 
 
 def _step_heading(number):
-    labels = ("Choose source", "Choose invoice", "Review draft")
+    labels = ("Connect Email", "Choose Email", "Review Results")
     return (
         '<ol class="simple-steps" aria-label="Invoice review progress">'
         + "".join(

@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 from invoice_email.ui import _analyze_upload
 from invoice_email.phishing import PhishingAssessment
-from invoice_email.models import Invoice
 from test_invoice_email import make_pdf, TEXT, invoice
 
 

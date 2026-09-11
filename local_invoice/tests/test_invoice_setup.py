@@ -145,7 +145,7 @@ class WorkspaceTests(unittest.IsolatedAsyncioTestCase):
         ):
             app = create_app()
         props = {item["props"].get("elem_id"): item["props"] for item in app.config["components"]}
-        self.assertTrue(props["invoice-reading-setup"]["visible"])
+        self.assertFalse(props["invoice-reading-setup"]["visible"])
         self.assertIn("AI key", props["invoice-reading-help"]["value"])
 
     async def test_workspace_has_setup_and_distinct_reading_and_writing_areas(self):

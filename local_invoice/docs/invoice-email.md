@@ -1,3 +1,5 @@
+> The unified workspace now uses server-configured Google web sign-in. See [current setup](../README.md#google-sign-in-for-the-unified-workspace-developer-setup). Desktop-client import instructions below describe the legacy integration, not the end-user flow.
+
 # Gmail invoice reminders
 
 This workflow reads actual Gmail messages and PDF attachment bytes, extracts the

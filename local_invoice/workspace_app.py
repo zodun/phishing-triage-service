@@ -25,6 +25,8 @@ def create_workspace():
 
     app.router.routes.insert(0, APIRoute("/", home, methods=["GET"]))
     app.state.invoice_workspace = True
+    from invoice_email.web_auth import router
+    app.include_router(router)
     return gr.mount_gradio_app(
         app,
         create_app(workspace=True),
@@ -49,4 +51,5 @@ if __name__ == "__main__":
         create_workspace(),
         host="127.0.0.1",
         port=int(os.getenv("WORKSPACE_PORT", "8089")),
+        access_log=False,
     )

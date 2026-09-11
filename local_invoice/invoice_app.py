@@ -20,21 +20,7 @@ def create_app(workspace=False):
 
 
 if __name__ == "__main__":
-    import gradio as gr
-    from invoice_email.appearance import workspace_css
+    import uvicorn
+    from workspace_app import create_workspace
 
-    port = os.getenv("INVOICE_APP_PORT")
-    create_app().launch(
-        server_name="127.0.0.1",
-        server_port=int(port) if port else None,
-        share=False,
-        show_error=False,
-        footer_links=[],
-        head="<style>" + workspace_css() + "</style>",
-        theme=gr.themes.Base(
-            primary_hue="blue",
-            neutral_hue="slate",
-            font=["-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-            font_mono=["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
-        ),
-    )
+    uvicorn.run(create_workspace(), host="127.0.0.1", port=int(os.getenv("WORKSPACE_PORT", "8089")), access_log=False)
