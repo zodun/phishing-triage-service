@@ -18,7 +18,15 @@ from app.observability import LATENCY, REQUESTS, get_logger, setup_logging
 from app.schemas import ClassifyRequest, ClassifyResponse
 
 log = get_logger("api")
-_INDEX_HTML = (Path(__file__).parent / "web" / "index.html").read_text(encoding="utf-8")
+_WEB = Path(__file__).parent / "web"
+_INDEX_HTML = (
+    (_WEB / "index.html")
+    .read_text(encoding="utf-8")
+    .replace(
+        "<!-- UI_FONTS -->",
+        "<style>" + (_WEB / "fonts.css").read_text(encoding="utf-8") + "</style>",
+    )
+)
 
 
 @asynccontextmanager

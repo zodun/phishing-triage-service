@@ -1,11 +1,24 @@
-# Invoice Email workspace
+# PhishGuard invoice review
 
-A person reviewing invoices at a desk in daylight needs a readable document workspace, clear progress, and one next action.
+Use the user's supplied PhishGuard HTML as the visual reference: dark navy canvas
+(#0f131d), layered inspection surfaces (#171b26, #1c1f2a), deepest inset fields
+(#0a0e18), cyan primary actions (#4cd7f6 with #003640 text), pale body text
+(#dfe2f1), and coral warning states. Geist carries the body and headings;
+JetBrains Mono carries compact technical labels. Fonts are bundled locally under
+their included SIL Open Font Licenses.
 
-Use a 216px pale neutral rail for the product identity and the actual three-step workflow. At 800px and below, it becomes a compact header and horizontal progress list. Main content is white, left-aligned, and bounded to a comfortable reading width. Avoid outer cards and marketing headlines.
+Retain the tested desktop workflow rail and compact mobile step navigation. Main
+content shows the actual connection, invoice selection, and review workflow.
+Group the draft into an email document. Show real phishing findings and invoice
+facts; the reference's simulated SOC metrics, authentication verdicts, sandbox
+results, and quarantine actions are not service capabilities.
 
-Use system sans-serif typography: 24px page title, 18px section headings, 14px body and inputs, 12–13px secondary text. Retain the blue primary action and current-step highlight. Controls use 6px corners, a clear border, and 40px desktop / 44px mobile targets. Status colors always accompany text.
+Use 6–8px corners, compact disclosures, clear focus rings, 40px desktop and 44px
+mobile controls, and visible labeled status colors. Preserve browser zoom and
+native scrolling. The classifier also adopts the reference's mobile action dock
+and bottom navigation using its actual inspection, assessment, and API links.
 
-Connection and setup controls are compact, with secondary configuration in disclosures. The review screen groups recipient, subject, and message into an email document. Source material remains accessible below the draft. Existing phishing and eligibility rules determine whether the composer appears.
-
-Load workspace CSS in a style element through Gradio's launch-level `head` option. Gradio 6's CSS scoping rewrites root selectors inside media queries, so these application-level layout rules must remain unscoped. HTML components carry semantic content only. Use a system-font Base theme to avoid external font loading and conflicting decorative defaults. Respect reduced motion and provide visible keyboard focus.
+Load global CSS through Gradio's launch-level HTML head to avoid its selector
+rewriting inside media queries. Disable default presentation CSS on custom HTML
+components. Preserve phishing and drafting eligibility rules, read-only Gmail
+access, and reduced-motion behavior.
