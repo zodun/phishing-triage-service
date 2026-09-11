@@ -226,7 +226,7 @@ def _analyze(message_id, signature):
 
 
 def create_invoice_email_tab():
-    from .appearance import HEADER, SETUP_GUIDE, workspace_css
+    from .appearance import HEADER, SETUP_GUIDE
 
     configured = setup_status()
     try:
@@ -236,16 +236,17 @@ def create_invoice_email_tab():
         )
     except ValueError:
         selected_provider, selected_model = "openai", "gpt-4.1-mini"
-    gr.HTML("<style>" + workspace_css() + "</style>")
-    gr.HTML(HEADER, elem_id="invoice-header")
+    gr.HTML(HEADER, elem_id="invoice-header", apply_default_css=False)
     analyses = gr.State([])
     eligible = gr.State(False)
     setup_from_invoice = gr.State(False)
     gr.HTML(
-        '<div class="simple-intro"><h1>Write a payment reminder</h1>'
-        "<p>Review the invoice, check for warning signs, and prepare a reminder you can edit.</p></div>"
+        '<div class="simple-intro"><h1>Invoice reminders</h1>'
+        "<p>From an invoice in your inbox to a reviewed payment reminder.</p></div>",
+        elem_id="invoice-intro",
+        apply_default_css=False,
     )
-    steps = gr.HTML(_step_heading(1), elem_id="invoice-sidebar")
+    steps = gr.HTML(_step_heading(1), elem_id="invoice-sidebar", apply_default_css=False)
 
     with gr.Column(elem_id="invoice-shell"):
         with gr.Column(elem_id="step-connect", visible=True) as step_connect:
@@ -264,21 +265,28 @@ def create_invoice_email_tab():
                 lines=2,
                 placeholder="You’ll choose your Google account in a new tab.",
             )
-            sign_in_link = gr.HTML("")
+            sign_in_link = gr.HTML("", apply_default_css=False)
             with gr.Accordion("Account setup — only needed once", open=False, elem_id="account-setup") as setup_panel:
                 gr.Markdown(
                     "This local app needs permission to read Gmail and an AI account to read invoices. "
                     "These settings are saved on this computer. If you have an IT person, they can do this part for you."
                 )
-                with gr.Accordion("1. Set up Gmail access", open=not configured["gmail_ready"]) as google_panel:
-                    gr.HTML(SETUP_GUIDE)
+                with gr.Accordion(
+                    "1. Set up Gmail access", open=not configured["gmail_ready"], elem_id="google-setup"
+                ) as google_panel:
+                    gr.HTML(SETUP_GUIDE, apply_default_css=False)
                     client_file = gr.File(
-                        label="Choose the file you downloaded from Google", file_types=[".json"], type="filepath"
+                        label="Choose the file you downloaded from Google",
+                        file_types=[".json"],
+                        type="filepath",
+                        height=140,
                     )
                     import_client = gr.Button("Save Google file", variant="primary")
                     import_status = gr.Textbox(label="Gmail setup", interactive=False)
                 with gr.Accordion(
-                    "2. Set up invoice reading", open=configured["gmail_ready"] and not configured["model_ready"]
+                    "2. Set up invoice reading",
+                    open=configured["gmail_ready"] and not configured["model_ready"],
+                    elem_id="ai-setup",
                 ) as ai_panel:
                     gr.Markdown(
                         "The AI reads the invoice and finds the customer and amount. "
@@ -343,24 +351,24 @@ def create_invoice_email_tab():
             gr.Markdown(
                 "## Review the assessment\nCheck the findings and invoice details. Eligible reminders appear below for you to edit."
             )
-            phishing_status = gr.HTML("", elem_id="phishing-status")
+            phishing_status = gr.HTML("", elem_id="phishing-status", apply_default_css=False)
             invoice_choice = gr.Dropdown(label="PDF to review", choices=[], interactive=True, visible=False)
             invoice_summary = gr.Textbox(
                 label="Invoice at a glance", interactive=False, lines=2, elem_id="invoice-summary"
             )
             review_status = gr.Textbox(label="Review notes", lines=2, interactive=False, elem_id="review-status")
             with gr.Column(elem_id="invoice-composer") as composer:
-                recipient = gr.Textbox(label="To — customer email", placeholder="Customer’s email address")
-                subject = gr.Textbox(label="Subject")
+                recipient = gr.Textbox(label="To", placeholder="Customer’s email address", elem_id="draft-recipient")
+                subject = gr.Textbox(label="Subject", elem_id="draft-subject")
                 copy_options = (
                     {"buttons": ["copy"]} if int(gr.__version__.split(".")[0]) >= 6 else {"show_copy_button": True}
                 )
-                body = gr.Textbox(label="Email draft", lines=12, **copy_options)
+                body = gr.Textbox(label="Message", lines=12, elem_id="draft-message", **copy_options)
                 gr.Markdown(
                     "**Ready?** Copy the subject and message into Gmail, or download the draft to open in an email app."
                 )
                 export = gr.Button("Download email draft", variant="primary")
-                download = gr.File(label="Your email file", interactive=False)
+                download = gr.File(label="Your email file", interactive=False, elem_id="draft-download", height=80)
             with gr.Accordion("See the original invoice", open=False, elem_id="invoice-reader"):
                 source = gr.Textbox(label="Text read from the PDF", lines=10, interactive=False)
                 with gr.Accordion("Original email", open=False):
@@ -575,7 +583,7 @@ def create_invoice_email_tab():
 
 
 def _step_heading(number):
-    labels = ("Connect Gmail", "Choose an invoice", "Review your email")
+    labels = ("Connect Gmail", "Choose invoice", "Review draft")
     return (
         '<ol class="simple-steps" aria-label="Invoice review progress">'
         + "".join(

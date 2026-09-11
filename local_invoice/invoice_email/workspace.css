@@ -1,112 +1,151 @@
-/* One visual system for the guided workflow, including Gradio dark-mode hosts. */
+/* Shared invoice workspace; loaded by the host, outside sanitized HTML. */
 .gradio-container {
-  color-scheme: light;
-  --workspace-bg: oklch(0.972 0.006 255);
-  --workspace-ink: oklch(0.26 0.035 258);
-  --workspace-muted: oklch(0.47 0.03 255);
-  --workspace-blue: oklch(0.49 0.19 259);
-  --workspace-line: oklch(0.86 0.015 255);
-  --body-background-fill: var(--workspace-bg);
-  --body-text-color: var(--workspace-ink);
-  --body-text-color-subdued: var(--workspace-muted);
-  --background-fill-primary: white;
-  --background-fill-secondary: var(--workspace-bg);
-  --block-background-fill: white;
-  --block-border-color: var(--workspace-line);
-  --block-label-text-color: var(--workspace-muted);
-  --block-title-text-color: var(--workspace-ink);
-  --input-background-fill: white;
-  --input-background-fill-focus: white;
-  --input-border-color: var(--workspace-line);
-  --input-border-color-focus: var(--workspace-blue);
-  --input-placeholder-color: var(--workspace-muted);
-  --button-primary-background-fill: var(--workspace-blue);
-  --button-primary-background-fill-hover: oklch(0.43 0.18 259);
-  --button-primary-text-color: white;
-  --button-secondary-background-fill: white;
-  --button-secondary-background-fill-hover: oklch(0.95 0.012 255);
-  --button-secondary-text-color: var(--workspace-ink);
-  --button-secondary-border-color: var(--workspace-line);
-  --link-text-color: var(--workspace-blue);
-  --border-color-primary: var(--workspace-line);
-  --border-color-accent: var(--workspace-blue);
-  --block-shadow: none;
-  --block-radius: 8px;
-  --input-radius: 7px;
-  width:100% !important;
-  max-width:1120px !important;
-  padding:0 32px 48px !important;
-  margin:0 auto !important;
-  box-sizing:border-box;
-  background:var(--workspace-bg) !important;
-  color:var(--workspace-ink) !important;
+  color-scheme:light;
+  --workspace-bg:#f6f7f9; --workspace-ink:#20252c; --workspace-muted:#59616d;
+  --workspace-blue:#2455c7; --workspace-line:#e3e6eb;
+  --body-background-fill:white; --body-text-color:var(--workspace-ink);
+  --body-text-color-subdued:var(--workspace-muted);
+  --background-fill-primary:white; --background-fill-secondary:#f6f7f9;
+  --block-background-fill:white; --block-border-color:var(--workspace-line);
+  --block-label-background-fill:white; --block-label-text-color:var(--workspace-muted);
+  --block-title-text-color:var(--workspace-ink);
+  --input-background-fill:white; --input-background-fill-focus:white;
+  --input-border-color:#d8dce3; --input-border-color-focus:var(--workspace-blue);
+  --input-placeholder-color:var(--workspace-muted);
+  --button-primary-background-fill:var(--workspace-blue);
+  --button-primary-background-fill-hover:#1b45aa; --button-primary-text-color:white;
+  --button-secondary-background-fill:white; --button-secondary-background-fill-hover:#f0f3f8;
+  --button-secondary-text-color:var(--workspace-ink); --button-secondary-border-color:#d8dce3;
+  --link-text-color:var(--workspace-blue); --border-color-primary:var(--workspace-line);
+  --border-color-accent:var(--workspace-blue); --block-shadow:none;
+  --block-radius:6px; --input-radius:6px; --button-large-radius:6px;
+  --button-small-radius:6px; --button-medium-radius:6px;
+  width:100% !important; max-width:1440px !important; min-height:100vh;
+  padding:0 !important; margin:0 !important;
+  box-sizing:border-box; background:white !important; color:var(--workspace-ink) !important;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif !important;
 }
-body { background:oklch(0.972 0.006 255) !important; }
-.app-header { display:flex; align-items:center; gap:16px; padding:22px 0; border-bottom:1px solid var(--workspace-line); }
-.app-brand { display:flex; align-items:center; gap:12px; font-size:19px; font-weight:700; letter-spacing:-.02em; color:var(--workspace-ink); }
-.brand-mark { display:grid; place-items:center; width:34px; height:38px; border-radius:8px; background:var(--workspace-blue); color:white; font-size:23px; }
+body { background:white !important; margin:0; }
+.main { padding:0 48px 48px 264px !important; max-width:none !important; width:100% !important; }
+#invoice-intro { padding:0 !important; border:0; }
+#invoice-intro .html-container { padding:0 !important; }
+#invoice-header { position:static; height:0; min-height:0; padding:0; border:0; overflow:visible; }
+.app-header { position:fixed; inset:0 auto 0 0; width:216px; padding:28px 22px;
+  background:var(--workspace-bg); border-right:1px solid var(--workspace-line); box-sizing:border-box; z-index:1; }
+.app-brand { display:flex; align-items:center; gap:9px; font-size:17px; font-weight:680; letter-spacing:-.025em; color:var(--workspace-ink); white-space:nowrap; }
+.brand-mark { color:var(--workspace-blue); flex-shrink:0; }
 .brand-light { font-weight:450; }
-.local-badge { margin-left:auto; font-size:12px; color:var(--workspace-muted); }
-.simple-intro { margin:32px 0 20px; }
-.simple-intro h1 { font-size:clamp(28px,4vw,36px); line-height:1.2; letter-spacing:-.03em; font-weight:650; margin:0 0 12px; color:var(--workspace-ink); text-wrap:balance; }
-.simple-intro p { color:var(--workspace-muted); font-size:16px; line-height:1.65; margin:0; max-width:65ch; }
-#invoice-sidebar { padding:0; min-width:0 !important; background:transparent; border:0; }
-.simple-steps { display:flex; gap:20px; margin:0; padding:4px 0 22px; list-style:none; }
-.simple-steps li { display:flex; align-items:center; flex:1; gap:10px; font-size:14px; color:var(--workspace-muted); }
-.simple-steps li span { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:oklch(0.92 0.012 255); color:var(--workspace-muted); flex-shrink:0; font-size:13px; }
-.simple-steps li:not(:last-child)::after { content:''; flex:1; height:1px; background:var(--workspace-line); margin-left:8px; }
-.simple-steps .current { color:var(--workspace-blue); font-weight:650; }
-.simple-steps .current span { background:var(--workspace-blue); color:white; }
-.simple-steps .complete span { background:oklch(0.92 0.035 155); color:oklch(0.36 0.07 155); }
+.rail-description { font-size:12px; color:var(--workspace-muted); margin:10px 0 0 35px; }
+.rail-footer { position:absolute; bottom:26px; left:22px; right:18px; padding-top:18px; border-top:1px solid var(--workspace-line); }
+.local-badge { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--workspace-ink); }
+.local-badge i { width:6px; height:6px; border-radius:50%; background:#3f8063; }
+.rail-footer p { font-size:12px; line-height:1.65; color:var(--workspace-muted); margin:8px 0 0; }
+.simple-intro { padding:31px 0 25px; border-bottom:1px solid var(--workspace-line); }
+.simple-intro h1 { font-size:24px; line-height:1.3; letter-spacing:-.025em; font-weight:650; margin:0 0 7px; color:var(--workspace-ink); }
+.simple-intro p { color:var(--workspace-muted); font-size:14px; line-height:1.6; margin:0; max-width:65ch; }
+#invoice-sidebar { position:fixed; left:14px; top:132px; width:188px; min-width:0 !important;
+  padding:0; border:0; background:transparent; z-index:2; }
+.simple-steps { display:flex; flex-direction:column; gap:8px; margin:0; padding:0; list-style:none; }
+.simple-steps li { display:flex; align-items:center; gap:10px; padding:11px 10px; border-radius:6px; font-size:13px; color:var(--workspace-muted); }
+.simple-steps li span { display:grid; place-items:center; width:22px; height:22px; border:1px solid #d6dbe3; border-radius:50%; flex-shrink:0; font-size:11px; }
+.simple-steps .current { background:#e9eefb; color:#224da9; font-weight:600; }
+.simple-steps .current span { border-color:var(--workspace-blue); background:var(--workspace-blue); color:white; }
+.simple-steps .complete span { background:#e5f0e9; border-color:#ceded3; color:#306449; }
 #invoice-shell { width:100%; min-width:0 !important; gap:0 !important; }
-#step-connect,#step-invoice,#step-review { padding:30px; background:white; border:1px solid var(--workspace-line); border-radius:12px; gap:20px; min-width:0 !important; }
-#invoice-shell h2 { font-size:22px; line-height:1.35; font-weight:650; margin:0 0 8px; text-wrap:balance; }
-#invoice-shell p { font-size:15px; line-height:1.65; color:var(--workspace-muted); max-width:70ch; overflow-wrap:anywhere; }
-#invoice-shell button { min-height:44px; font-size:14px; font-weight:600; transition:background-color 160ms ease-out; box-shadow:none !important; }
-#invoice-shell button:disabled { opacity:.55; cursor:default; }
-#invoice-shell :is(button,a,input,textarea,summary):focus-visible { outline:3px solid var(--workspace-blue); outline-offset:3px; }
-#invoice-shell :is(input,textarea) { color:var(--workspace-ink); font-size:15px; line-height:1.65; }
-#invoice-shell :is(input,textarea)::placeholder { color:var(--workspace-muted); opacity:1; }
+#step-connect,#step-invoice,#step-review { padding:28px 0 0; background:white; border:0; border-radius:0; gap:18px; min-width:0 !important; width:100%; max-width:760px; }
+#invoice-shell h2 { font-size:18px; line-height:1.4; font-weight:650; margin:0 0 7px; color:var(--workspace-ink); text-wrap:balance; }
+#invoice-shell p { font-size:14px; line-height:1.65; color:var(--workspace-muted); max-width:70ch; overflow-wrap:anywhere; }
+#invoice-shell button { min-height:40px; font-size:13px; font-weight:600; transition:background-color 160ms ease-out; box-shadow:none !important; border-radius:6px; }
+#invoice-shell button:not(.label-wrap):not([role=option]):not([aria-label]):not(.icon-button) { flex-grow:0; }
+#invoice-shell #step-connect > button ,
+#invoice-shell #step-invoice > button ,
+#invoice-shell #step-review > button ,
+#invoice-shell #invoice-message-results > button ,
+#invoice-shell #invoice-reading-setup > button ,
+#invoice-shell #invoice-composer > button  { width:fit-content; min-width:140px; align-self:flex-start; padding:9px 17px; }
+#invoice-shell button:disabled { opacity:.5; cursor:default; }
+#invoice-shell button:focus-visible ,
+#invoice-shell a:focus-visible ,
+#invoice-shell input:focus-visible ,
+#invoice-shell textarea:focus-visible ,
+#invoice-shell summary:focus-visible  { outline:2px solid var(--workspace-blue); outline-offset:3px; }
+#invoice-shell input ,
+#invoice-shell textarea  { color:var(--workspace-ink); font-size:14px; line-height:1.6; }
+#invoice-shell input::placeholder ,
+#invoice-shell textarea::placeholder  { color:var(--workspace-muted); opacity:1; }
 #invoice-shell textarea:disabled { -webkit-text-fill-color:var(--workspace-ink); opacity:1; }
-#invoice-shell .block { min-width:0 !important; }
-#invoice-shell :is(#connection-status,#workflow-status,#invoice-summary,#review-status) { background:var(--workspace-bg); border:0; }
-#invoice-shell :is(#connection-status,#workflow-status,#invoice-summary,#review-status) textarea { background:transparent; }
-#invoice-message-results { gap:16px; }
-#invoice-composer { padding:8px 0 0; gap:16px; background:transparent; border:0; }
-#invoice-composer textarea { line-height:1.8; }
-#invoice-reader,#account-setup { background:var(--workspace-bg); border:1px solid var(--workspace-line); border-radius:8px; }
-#invoice-reader textarea { font:13px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace; }
-#account-setup :is(p,li) { font-size:14px; }
-.google-signin { display:block; padding:14px 18px; border-radius:7px; background:var(--workspace-blue); color:white !important; text-align:center; font-weight:650; text-decoration:none; }
-.signin-help { text-align:center; }
-.setup-heading { display:flex; align-items:center; gap:10px; margin:8px 0 14px; }
+#invoice-shell .block { min-width:0 !important; box-shadow:none !important; }
+#invoice-shell #connection-status ,
+#invoice-shell #workflow-status ,
+#invoice-shell #invoice-summary ,
+#invoice-shell #review-status  { background:#f6f7f9; border:0; border-radius:6px; }
+#invoice-shell #connection-status textarea ,
+#invoice-shell #workflow-status textarea ,
+#invoice-shell #invoice-summary textarea ,
+#invoice-shell #review-status textarea  { background:transparent; border:0; box-shadow:none; font-size:13px; }
+#invoice-message-results { gap:14px; border:0; background:transparent; }
+#invoice-composer { padding:20px; gap:14px; background:white; border:1px solid var(--workspace-line); border-radius:8px; }
+#invoice-composer #draft-recipient ,
+#invoice-composer #draft-subject ,
+#invoice-composer #draft-message  { border:0; background:white; padding:0; }
+#invoice-composer textarea { line-height:1.8; border:1px solid #d8dce3; border-radius:5px; }
+#invoice-composer #draft-message textarea { min-height:280px; }
+#invoice-reader,#account-setup { background:white; border:1px solid var(--workspace-line); border-radius:6px; }
+#account-setup .block { box-shadow:none; }
+#account-setup .accordion { background:white; }
+#invoice-reader textarea { font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; }
+#account-setup p ,
+#account-setup li  { font-size:13px; }
+.google-signin { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:0 17px; border-radius:6px; background:var(--workspace-blue); color:white !important; font-size:13px; font-weight:600; text-decoration:none; }
+.signin-help { font-size:13px; }
+.setup-heading { margin:4px 0 12px; }
 .setup-heading > span { display:none; }
-.setup-heading h2 { font-size:18px !important; }
+.setup-heading h2 { font-size:16px !important; }
 .setup-copy { color:var(--workspace-muted); line-height:1.65; }
-.setup-steps { padding-left:22px; margin:20px 0; color:var(--workspace-muted); line-height:1.65; }
+.setup-steps { padding-left:20px; margin:20px 0; color:var(--workspace-muted); line-height:1.65; }
 .setup-steps li { padding-left:4px; margin-bottom:16px; }
 .setup-steps a { color:var(--workspace-blue) !important; font-weight:600; text-underline-offset:3px; }
-.phishing-result { padding:20px; border-radius:8px; border:1px solid var(--workspace-line); overflow-wrap:anywhere; }
-.phishing-result h3 { margin:0 0 8px; font-size:18px; color:inherit !important; }
-.phishing-result ul { padding-left:20px; margin:8px 0; }
-.phishing-result li { font-size:14px; line-height:1.65; margin:6px 0; }
-#invoice-shell .phishing-result p { color:inherit; font-size:13px; margin:12px 0 0; }
-.phishing-result.suspicious { background:oklch(0.96 0.025 25); color:oklch(0.36 0.12 25); }
-.phishing-result.unable_to_assess { background:oklch(0.97 0.03 85); color:oklch(0.39 0.075 65); }
-.phishing-result.no_obvious_signs { background:oklch(0.96 0.025 155); color:oklch(0.36 0.07 155); }
-@media(min-width:850px) { #step-connect,#step-invoice { max-width:800px; align-self:center; } }
-@media(max-width:740px) {
-  .gradio-container { padding:0 16px 28px !important; }
-  .app-header { padding:18px 0; }
+.phishing-result { padding:16px 18px; border-radius:6px; overflow-wrap:anywhere; }
+.phishing-result h3 { margin:0 0 8px; font-size:17px; color:inherit !important; }
+.phishing-result ul { padding-left:18px; margin:8px 0; }
+.phishing-result li { font-size:13px; line-height:1.6; margin:6px 0; }
+#invoice-shell .phishing-result p { color:inherit; font-size:12px; margin:12px 0 0; }
+.phishing-result.suspicious { background:#fff0f0; color:#8a2934; }
+.phishing-result.unable_to_assess { background:#fff6e5; color:#765214; }
+.phishing-result.no_obvious_signs { background:#edf6f0; color:#2a6245; }
+@media(min-width:1440px) { .main { padding-right:64px !important; } }
+@media(max-width:800px) {
+  .main { padding:0 24px 32px !important; }
+  #invoice-header { height:auto; }
+  .app-header { position:relative; inset:auto; width:auto; margin:0 -24px; padding:18px 24px; border-right:0; border-bottom:1px solid var(--workspace-line); }
   .app-brand { font-size:17px; }
-  .simple-intro { margin-top:24px; }
-  .simple-steps { gap:12px; }
-  .simple-steps li { flex-direction:column; align-items:flex-start; gap:8px; font-size:12px; }
-  .simple-steps li:not(:last-child)::after { display:none; }
-  #step-connect,#step-invoice,#step-review { padding:20px; }
-  #invoice-shell :is(input,textarea) { font-size:16px; }
-  #invoice-shell h2 { font-size:20px; }
+  .rail-description,.rail-footer { display:none; }
+  .simple-intro { padding:24px 0 20px; }
+  .simple-intro h1 { font-size:23px; }
+  #invoice-sidebar { position:static; width:100%; padding:8px 0 0; }
+  .simple-steps { flex-direction:row; gap:8px; }
+  .simple-steps li { flex:1; padding:9px 6px; font-size:12px; gap:7px; }
+  .simple-steps li span { width:20px; height:20px; }
+  #step-connect,#step-invoice,#step-review { padding-top:20px; }
+  #invoice-shell button { min-height:44px; }
+  #invoice-shell input ,
+  #invoice-shell textarea  { font-size:16px; }
 }
-@media(max-width:380px) { .local-badge { display:none; } #step-connect,#step-invoice,#step-review { padding:16px; } }
+@media(max-width:450px) {
+  .main { padding:0 18px 24px !important; }
+  .app-header { margin:0 -18px; padding:17px 18px; }
+  .simple-steps { gap:3px; }
+  .simple-steps li { flex-direction:column; align-items:flex-start; gap:7px; padding:9px 7px; font-size:11px; }
+  #invoice-composer { padding:14px; }
+}
 @media(prefers-reduced-motion:reduce) { #invoice-shell * { transition:none !important; animation:none !important; } }
+
+/* Keep the generated draft download compact. */
+#draft-download:has(.file-preview) { min-height:0; }
+#draft-download .empty { min-height:48px; height:48px; }
+
+/* Keep setup and draft surfaces from inheriting nested Gradio form frames. */
+#google-setup, #ai-setup { border:0; border-top:1px solid var(--workspace-line); border-radius:0; padding:0; }
+#invoice-composer .form { border:0; background:transparent; gap:14px; }
+#draft-recipient label > span, #draft-subject label > span, #draft-message label > span { margin-bottom:6px; }
+#invoice-summary textarea, #review-status textarea, #connection-status textarea { min-height:0; }

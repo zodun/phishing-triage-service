@@ -1,29 +1,11 @@
 # Invoice Email workspace
 
-## Context
+A person reviewing invoices at a desk in daylight needs a readable document workspace, clear progress, and one next action.
 
-A user at a desk in daylight reads invoice documents and edits correspondence in
-Safari. A bright, centered working surface keeps invoice text readable and makes the
-current step clear.
+Use a 216px pale neutral rail for the product identity and the actual three-step workflow. At 800px and below, it becomes a compact header and horizontal progress list. Main content is white, left-aligned, and bounded to a comfortable reading width. Avoid outer cards and marketing headlines.
 
-## Visual system
+Use system sans-serif typography: 24px page title, 18px section headings, 14px body and inputs, 12–13px secondary text. Retain the blue primary action and current-step highlight. Controls use 6px corners, a clear border, and 40px desktop / 44px mobile targets. Status colors always accompany text.
 
-Retain the existing project's blue accent family. Use a cool neutral page background, white document surfaces, a horizontal
-progress indicator, and a clear blue primary action.
-Represent tokens with OKLCH. Use system sans-serif typography, compact form labels,
-generous reading space, and 10–12px panel radii. Status colors have text labels.
+Connection and setup controls are compact, with secondary configuration in disclosures. The review screen groups recipient, subject, and message into an email document. Source material remains accessible below the draft. Existing phishing and eligibility rules determine whether the composer appears.
 
-## Structure
-
-A compact header, a bounded 1120px workspace, and a centered, three-step flow: Connect Gmail, Choose an invoice,
-Review your email. Show only the current step. One-time setup is collapsed until
-requested; after configuration the first screen has a single Connect Gmail action.
-Search options, source documents, and extraction JSON are secondary disclosures.
-The review step prioritizes the editable message and a plain-text invoice summary.
-
-## Interaction
-
-Show onboarding when credentials are absent. Provide direct Google setup links,
-client JSON import, model configuration, and an explicit Google sign-in link.
-Lock source controls during processing. Use 160ms state transitions with reduced
-motion support. No fabricated dashboard statistics or decorative animations.
+Load workspace CSS in a style element through Gradio's launch-level `head` option. Gradio 6's CSS scoping rewrites root selectors inside media queries, so these application-level layout rules must remain unscoped. HTML components carry semantic content only. Use a system-font Base theme to avoid external font loading and conflicting decorative defaults. Respect reduced motion and provide visible keyboard focus.

@@ -8,9 +8,10 @@ def workspace_css():
 
 
 HEADER = """<header class="app-header">
-  <div class="app-brand"><span class="brand-mark" aria-hidden="true">↗</span>
+  <div class="app-brand"><svg class="brand-mark" width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><rect x="3.5" y="5.5" width="19" height="15" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="m4 7 9 7 9-7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
     <span>Invoice<span class="brand-light">Email</span></span></div>
-  <span class="local-badge">Local workspace · Read-only Gmail</span>
+  <p class="rail-description">Payment reminders</p>
+  <div class="rail-footer"><span class="local-badge"><i aria-hidden="true"></i> Local workspace</span><p>Gmail access is read-only.<br>You review every draft.</p></div>
 </header>"""
 
 SETUP_GUIDE = """<div class="setup-heading"><span>1</span><h2>Connect your Google account</h2></div>
