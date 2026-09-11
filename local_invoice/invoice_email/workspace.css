@@ -250,3 +250,22 @@ body { background:#0f131d !important; margin:0; }
  .simple-steps { gap:4px; }
  .simple-steps li { flex:1; padding:8px 6px; font-size:11px; }
 }
+
+/* A consistent hierarchy across connection, selection, and review. */
+.brand-caption { display:block; margin-top:4px; font:9px/1.4 'JetBrains Mono',monospace; letter-spacing:.08em; color:#4cd7f6; }
+#step-invoice,#step-review { background:transparent; padding:0; gap:20px; }
+#invoice-selection-panels,#invoice-review-panels { gap:20px; align-items:flex-start; }
+#invoice-selection-card,#invoice-evidence-card,#invoice-composer { flex:1 1 400px; min-width:0!important; padding:20px; background:#1c1f2a; border:0; border-radius:8px; gap:16px; }
+#invoice-selection-preview { flex:1 1 400px; min-width:0!important; padding:0; border:0; background:#1c1f2a; border-radius:8px; }
+#invoice-selection-preview .html-container { padding:0; }
+#invoice-shell h3 { font-size:14px; font-weight:600; color:#dfe2f1; }
+#invoice-evidence-card > .prose,#invoice-composer > .prose:first-child { border-bottom:1px solid #3d494c; padding-bottom:12px; }
+#invoice-composer #draft-recipient,#invoice-composer #draft-subject,#invoice-composer #draft-message { background:transparent; }
+#invoice-composer textarea,#invoice-evidence-card textarea { background:#0a0e18!important; border:1px solid #313540; }
+#invoice-composer #draft-message textarea { min-height:310px; }
+#invoice-shell #invoice-selection-card > button { width:fit-content; padding:10px 18px; }
+.draft-preview svg { color:#4cd7f6; margin:auto; }
+@media(max-width:800px) {
+ #invoice-selection-panels,#invoice-review-panels { flex-direction:column; }
+ #invoice-selection-card,#invoice-evidence-card,#invoice-composer,#invoice-selection-preview { flex:auto; width:100%; }
+}

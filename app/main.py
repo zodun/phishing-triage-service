@@ -72,7 +72,7 @@ async def request_context(
 async def root(request: Request) -> str:
     page = _INDEX_HTML.replace(
         "<!-- WORKSPACE_NAV -->",
-        '<a href="/invoices/">Gmail &amp; invoices</a>'
+        '<a href="/invoices/">Invoice reminders</a>'
         if getattr(request.app.state, "invoice_workspace", False)
         else "",
     )

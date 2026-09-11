@@ -9,7 +9,7 @@ def workspace_css():
 
 HEADER = """<header class="app-header">
   <div class="app-brand"><svg class="brand-mark" width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="m13 3 8 3v6c0 5-5 9-8 11-3-2-8-6-8-11V6l8-3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m9 12 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span>PhishGuard</span></div>
+    <span>PhishGuard<small class="brand-caption">EMAIL &amp; INVOICE REVIEW</small></span></div>
   <p class="rail-description">Invoice review</p>
   <div class="rail-footer"><span class="local-badge"><i aria-hidden="true"></i> Local workspace</span><p>Gmail access is read-only.<br>You review every draft.</p></div>
 </header>"""

@@ -241,8 +241,8 @@ def create_invoice_email_tab(workspace=False):
         header = header.replace(
             '<p class="rail-description">Invoice review</p>',
             '<nav class="workspace-navigation" aria-label="Workspace">'
-            '<a href="/invoices/" aria-current="page">Gmail &amp; invoices</a>'
-            '<a href="/inspect">Inspect pasted email ↗</a></nav>',
+            '<a href="/invoices/" aria-current="page">Invoice reminders</a>'
+            '<a href="/inspect">Email inspection</a></nav>',
         )
     gr.HTML(header, elem_id="invoice-header", apply_default_css=False)
     analyses = gr.State([])
@@ -329,69 +329,83 @@ def create_invoice_email_tab(workspace=False):
             )
 
         with gr.Column(elem_id="step-invoice", visible=False) as step_invoice:
-            gr.Markdown("## Choose an invoice\nFind a recent email with a PDF attachment or a direct PDF link.")
-            search = gr.Button("Find invoice emails", variant="primary")
-            status = gr.Textbox(
-                label="Search and review status",
-                elem_id="workflow-status",
-                interactive=False,
-                value="Click Find invoice emails, select an email below, then click Check email.",
-                lines=3,
-            )
-            with gr.Column(visible=True, elem_id="invoice-message-results"):
-                message_choice = gr.Dropdown(
-                    label="Email with PDF attachment or link",
-                    choices=[],
-                    interactive=True,
-                    info="Click Find invoice emails to populate this list, then choose one.",
+            gr.Markdown("## Choose an invoice\nFind an email, then read its PDF attachments.")
+            with gr.Row(elem_id="invoice-selection-panels"):
+                with gr.Column(elem_id="invoice-selection-card"):
+                    search = gr.Button("Find invoice emails", variant="primary")
+                    status = gr.Textbox(
+                        label="Search and review status",
+                        elem_id="workflow-status",
+                        interactive=False,
+                        value="Click Find invoice emails, select an email below, then click Check email.",
+                        lines=3,
+                    )
+                    with gr.Column(visible=True, elem_id="invoice-message-results"):
+                        message_choice = gr.Dropdown(
+                            label="Email with PDF attachment or link",
+                            choices=[],
+                            interactive=True,
+                            info="Click Find invoice emails to populate this list, then choose one.",
+                        )
+                        analyze = gr.Button("Check email", variant="primary")
+                    with gr.Column(visible=not configured["model_ready"], elem_id="invoice-reading-setup") as reading_setup:
+                        gr.Markdown(
+                            "**One step left: add your AI key.**\n\n"
+                            "Gmail gives us access to the attachment. The AI reads it and prepares your reminder. "
+                            "Add the key once, then return to this invoice.",
+                            elem_id="invoice-reading-help",
+                        )
+                        reading_setup_button = gr.Button("Add my AI key")
+                    with gr.Accordion("Search options and email signature", open=False):
+                        query = gr.Textbox(
+                            label="Gmail search",
+                            value="in:inbox newer_than:90d",
+                            info="The default looks in your inbox from the last 90 days.",
+                        )
+                        limit = gr.Slider(1, 50, value=20, step=1, label="Maximum messages")
+                        signature = gr.Textbox(label="Your email signature", value="Accounts Receivable")
+                gr.HTML(
+                    '<section class="draft-preview"><h2>PDF REVIEW</h2><div class="draft-preview-body">'
+                    '<svg width="32" height="40" viewBox="0 0 24 30" fill="none" stroke="currentColor" aria-hidden="true"><path d="M3 1h12l6 6v22H3z M15 1v7h6 M7 14h10 M7 19h8"/></svg>'
+                    '<h3>Start with an invoice email</h3><p>Choose a message on the left. '
+                    'We’ll check the email and read the text inside its PDF attachments.</p>'
+                    '<div class="preview-facts"><span>Customer details</span><span>Payment status</span><span>Draft reminder</span></div>'
+                    '</div></section>', elem_id="invoice-selection-preview", apply_default_css=False,
                 )
-                analyze = gr.Button("Check email", variant="primary")
-            with gr.Column(visible=not configured["model_ready"], elem_id="invoice-reading-setup") as reading_setup:
-                gr.Markdown(
-                    "**One step left: add your AI key.**\n\n"
-                    "Gmail gives us access to the attachment. The AI reads it and prepares your reminder. "
-                    "Add the key once, then return to this invoice.",
-                    elem_id="invoice-reading-help",
-                )
-                reading_setup_button = gr.Button("Add my AI key")
-            with gr.Accordion("Search options and email signature", open=False):
-                query = gr.Textbox(
-                    label="Gmail search",
-                    value="in:inbox newer_than:90d",
-                    info="The default looks in your inbox from the last 90 days.",
-                )
-                limit = gr.Slider(1, 50, value=20, step=1, label="Maximum messages")
-                signature = gr.Textbox(label="Your email signature", value="Accounts Receivable")
             back_connect = gr.Button("← Back to connection")
 
         with gr.Column(elem_id="step-review", visible=False) as step_review:
             gr.Markdown(
-                "## Review the assessment\nCheck the findings and invoice details. Eligible reminders appear below for you to edit."
+                "## Review your invoice and reminder\nVerify the invoice details, then edit the email before you send it."
             )
-            phishing_status = gr.HTML("", elem_id="phishing-status", apply_default_css=False)
-            invoice_choice = gr.Dropdown(label="PDF to review", choices=[], interactive=True, visible=False)
-            invoice_summary = gr.Textbox(
-                label="Invoice at a glance", interactive=False, lines=2, elem_id="invoice-summary"
-            )
-            review_status = gr.Textbox(label="Review notes", lines=2, interactive=False, elem_id="review-status")
-            with gr.Column(elem_id="invoice-composer") as composer:
-                recipient = gr.Textbox(label="To", placeholder="Customer’s email address", elem_id="draft-recipient")
-                subject = gr.Textbox(label="Subject", elem_id="draft-subject")
-                copy_options = (
-                    {"buttons": ["copy"]} if int(gr.__version__.split(".")[0]) >= 6 else {"show_copy_button": True}
-                )
-                body = gr.Textbox(label="Message", lines=12, elem_id="draft-message", **copy_options)
-                gr.Markdown(
-                    "**Ready?** Copy the subject and message into Gmail, or download the draft to open in an email app."
-                )
-                export = gr.Button("Download email draft", variant="primary")
-                download = gr.File(label="Your email file", interactive=False, elem_id="draft-download", height=80)
-            with gr.Accordion("See the original invoice", open=False, elem_id="invoice-reader"):
-                source = gr.Textbox(label="Text read from the PDF", lines=10, interactive=False)
-                with gr.Accordion("Original email", open=False):
-                    email_body = gr.Textbox(label="Email body", lines=6, interactive=False)
-                with gr.Accordion("Extraction details", open=False):
-                    facts = gr.JSON(label="Invoice details and supporting quotes")
+            with gr.Row(elem_id="invoice-review-panels"):
+                with gr.Column(elem_id="invoice-evidence-card"):
+                    gr.Markdown("### Invoice assessment")
+                    phishing_status = gr.HTML("", elem_id="phishing-status", apply_default_css=False)
+                    invoice_choice = gr.Dropdown(label="PDF to review", choices=[], interactive=True, visible=False)
+                    invoice_summary = gr.Textbox(
+                        label="Invoice at a glance", interactive=False, lines=2, elem_id="invoice-summary"
+                    )
+                    review_status = gr.Textbox(label="Review notes", lines=2, interactive=False, elem_id="review-status")
+                    with gr.Accordion("See the original invoice", open=False, elem_id="invoice-reader"):
+                        source = gr.Textbox(label="Text read from the PDF", lines=10, interactive=False)
+                        with gr.Accordion("Original email", open=False):
+                            email_body = gr.Textbox(label="Email body", lines=6, interactive=False)
+                        with gr.Accordion("Extraction details", open=False):
+                            facts = gr.JSON(label="Invoice details and supporting quotes")
+                with gr.Column(elem_id="invoice-composer") as composer:
+                    gr.Markdown("### Payment reminder")
+                    recipient = gr.Textbox(label="To", placeholder="Customer’s email address", elem_id="draft-recipient")
+                    subject = gr.Textbox(label="Subject", elem_id="draft-subject")
+                    copy_options = (
+                        {"buttons": ["copy"]} if int(gr.__version__.split(".")[0]) >= 6 else {"show_copy_button": True}
+                    )
+                    body = gr.Textbox(label="Message", lines=12, elem_id="draft-message", **copy_options)
+                    gr.Markdown(
+                        "**Ready?** Copy the subject and message into Gmail, or download the draft to open in an email app."
+                    )
+                    export = gr.Button("Download email draft", variant="primary")
+                    download = gr.File(label="Your email file", interactive=False, elem_id="draft-download", height=80)
             back_invoice = gr.Button("← Choose another invoice")
 
     review_outputs = [facts, source, review_status, recipient, subject, body, download, eligible]
