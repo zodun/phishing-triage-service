@@ -207,3 +207,46 @@ body { background:#0f131d !important; margin:0; }
 .workspace-navigation a:focus-visible { outline:2px solid #4cd7f6; outline-offset:3px; }
 @media(max-width:800px) { .workspace-navigation { flex-direction:row; flex-wrap:wrap; margin-top:8px; gap:4px; } }
 @media(min-width:801px) { body:has(.workspace-navigation) #invoice-sidebar { top:190px; } }
+
+/* Shared inspection design: full-width masthead, centered canvas, paired cards. */
+.main { padding:100px 24px 48px !important; max-width:1200px !important; margin:auto !important; }
+#invoice-header { height:0 !important; }
+.app-header { position:fixed; inset:0 0 auto; width:100%; height:72px; padding:0 32px; display:flex; align-items:center; justify-content:space-between; background:#0f131d; border:0; border-bottom:1px solid #3d494c; z-index:20; margin:0; }
+.app-brand { font-size:18px; }
+.brand-mark { width:32px; height:36px; }
+.workspace-navigation { flex-direction:row; gap:8px; margin:0; }
+.workspace-navigation a { padding:10px 14px; font-size:13px; }
+.rail-footer { display:none; }
+.simple-intro { background:#1c1f2a; padding:24px; border:0; border-radius:8px; }
+.simple-intro h1 { font-size:24px; }
+#invoice-sidebar,body:has(.workspace-navigation) #invoice-sidebar { position:static; width:100%; padding:12px 0; }
+.simple-steps { flex-direction:row; gap:12px; }
+.simple-steps li { flex:initial; padding:9px 14px; }
+#step-connect,#step-invoice,#step-review { max-width:none; width:100%; padding:20px; border-radius:8px; background:#1c1f2a; }
+#step-connect { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:16px 32px; padding:20px; align-items:start; }
+#step-connect.hidden { display:none !important; }
+#step-connect > * { grid-column:1; min-width:0; }
+#step-connect > #connection-preview { grid-column:2; grid-row:1 / span 12; align-self:stretch; padding:0; border:0; background:#171b26; border-radius:8px; }
+.draft-preview h2 { padding:18px 20px; border-bottom:1px solid #3d494c; font-size:13px!important; margin:0!important; }
+.draft-preview-body { text-align:center; padding:72px 28px; }
+.preview-icon { color:#4cd7f6; font-size:36px; }
+.draft-preview h3 { font-size:15px; margin:18px 0 10px; }
+.draft-preview p { font-size:13px!important; line-height:1.8!important; }
+.preview-facts { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:24px; }
+.preview-facts span { font:10px 'JetBrains Mono',monospace; color:#869397; padding:8px; background:#0a0e18; border-radius:4px; }
+.google-help summary { cursor:pointer; color:#4cd7f6; padding:12px 0; font-size:13px; }
+#account-setup { margin-top:0; }
+#connection-status { background:#0a0e18; }
+#invoice-composer { background:#0a0e18; border-radius:8px; }
+@media(max-width:800px) {
+ .main { padding:100px 16px 32px!important; }
+ .app-header { padding:12px 16px; height:80px; }
+ .workspace-navigation { flex-direction:column; gap:0; }
+ .workspace-navigation a { font-size:11px; padding:6px 8px; }
+ .simple-intro { padding:20px; }
+ #step-connect { grid-template-columns:1fr; padding:16px; }
+ #step-connect > #connection-preview { grid-column:1; grid-row:auto; }
+ .draft-preview-body { padding:28px 20px; }
+ .simple-steps { gap:4px; }
+ .simple-steps li { flex:1; padding:8px 6px; font-size:11px; }
+}

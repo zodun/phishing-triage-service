@@ -261,7 +261,7 @@ def create_invoice_email_tab(workspace=False):
             gr.Markdown("## Connect your email\nWe’ll look for invoice attachments in your Gmail account.")
             setup_hint = gr.Markdown(_setup_explanation(configured))
             start_setup = gr.Button(
-                "Start one-time setup",
+                "Set up Gmail",
                 variant="primary",
                 visible=not (configured["gmail_ready"] and configured["model_ready"]),
             )
@@ -274,17 +274,16 @@ def create_invoice_email_tab(workspace=False):
                 placeholder="You’ll choose your Google account in a new tab.",
             )
             sign_in_link = gr.HTML("", apply_default_css=False)
-            with gr.Accordion("Account setup — only needed once", open=False, elem_id="account-setup") as setup_panel:
+            with gr.Accordion("Connection settings", open=False, elem_id="account-setup") as setup_panel:
                 gr.Markdown(
-                    "This local app needs permission to read Gmail and an AI account to read invoices. "
-                    "These settings are saved on this computer. If you have an IT person, they can do this part for you."
+                    "Two steps, saved once on this computer. Start with your Google connection file."
                 )
                 with gr.Accordion(
-                    "1. Set up Gmail access", open=not configured["gmail_ready"], elem_id="google-setup"
+                    "1. Add your Google connection file", open=not configured["gmail_ready"], elem_id="google-setup"
                 ) as google_panel:
                     gr.HTML(SETUP_GUIDE, apply_default_css=False)
                     client_file = gr.File(
-                        label="Choose the file you downloaded from Google",
+                        label="Google connection file (.json)",
                         file_types=[".json"],
                         type="filepath",
                         height=140,
@@ -292,7 +291,7 @@ def create_invoice_email_tab(workspace=False):
                     import_client = gr.Button("Save Google file", variant="primary")
                     import_status = gr.Textbox(label="Gmail setup", interactive=False)
                 with gr.Accordion(
-                    "2. Set up invoice reading",
+                    "2. Enable invoice reading",
                     open=configured["gmail_ready"] and not configured["model_ready"],
                     elem_id="ai-setup",
                 ) as ai_panel:
@@ -317,7 +316,17 @@ def create_invoice_email_tab(workspace=False):
                 setup_summary = gr.Textbox(
                     label="What’s left to set up", value=configured["summary"], interactive=False
                 )
-            gr.Markdown("**You stay in control.** The app reads email and writes drafts. It does not send them.")
+            gr.Markdown("**Read-only access.** You review every reminder before sending.")
+            gr.HTML(
+                '<section class="draft-preview"><h2>INVOICE &amp; REMINDER</h2>'
+                '<div class="draft-preview-body"><span class="preview-icon" aria-hidden="true">▧</span>'
+                '<h3>Your invoice review appears here</h3>'
+                '<p>Connect Gmail and choose an email. We’ll read its PDF attachment, '
+                'extract the customer and amount due, and prepare a reminder for you to review.</p>'
+                '<div class="preview-facts"><span>Customer</span><span>Amount due</span><span>Due date</span></div>'
+                '</div></section>',
+                elem_id="connection-preview", apply_default_css=False,
+            )
 
         with gr.Column(elem_id="step-invoice", visible=False) as step_invoice:
             gr.Markdown("## Choose an invoice\nFind a recent email with a PDF attachment or a direct PDF link.")
@@ -608,11 +617,11 @@ def _setup_explanation(configured):
         return "Everything is set up. **Connect Gmail** to choose your account."
     if configured["gmail_ready"]:
         return (
-            "**Google is ready. Connect Gmail to choose your account.**\n\n"
+            "**Google is ready. Choose your account to continue.**\n\n"
             "Before reading invoices, use one-time setup to add your AI account key."
         )
     return (
-        "**This app needs a one-time setup before you can connect.**\n\n"
+        "**Connect your inbox once.**\n\n"
         "We’ll guide you through the Google permission file and the key used to read invoices. "
         "You only need to do this once on this computer."
     )
