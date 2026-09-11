@@ -225,7 +225,7 @@ def _analyze(message_id, signature):
         )
 
 
-def create_invoice_email_tab():
+def create_invoice_email_tab(workspace=False):
     from .appearance import HEADER, SETUP_GUIDE
 
     configured = setup_status()
@@ -236,7 +236,15 @@ def create_invoice_email_tab():
         )
     except ValueError:
         selected_provider, selected_model = "openai", "gpt-4.1-mini"
-    gr.HTML(HEADER, elem_id="invoice-header", apply_default_css=False)
+    header = HEADER
+    if workspace:
+        header = header.replace(
+            '<p class="rail-description">Invoice review</p>',
+            '<nav class="workspace-navigation" aria-label="Workspace">'
+            '<a href="/invoices/" aria-current="page">Gmail &amp; invoices</a>'
+            '<a href="/inspect">Inspect pasted email ↗</a></nav>',
+        )
+    gr.HTML(header, elem_id="invoice-header", apply_default_css=False)
     analyses = gr.State([])
     eligible = gr.State(False)
     setup_from_invoice = gr.State(False)

@@ -8,12 +8,12 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
 
-def create_app():
+def create_app(workspace=False):
     import gradio as gr
     from invoice_email.ui import create_invoice_email_tab
 
     with gr.Blocks(title="Invoice Email", fill_width=True, delete_cache=(3600, 3600)) as app:
-        create_invoice_email_tab()
+        create_invoice_email_tab(workspace=workspace)
     return app
 
 

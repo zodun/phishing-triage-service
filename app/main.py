@@ -69,8 +69,14 @@ async def request_context(
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/inspect", response_class=HTMLResponse)
-async def root() -> str:
-    return _INDEX_HTML.replace(
+async def root(request: Request) -> str:
+    page = _INDEX_HTML.replace(
+        "<!-- WORKSPACE_NAV -->",
+        '<a href="/invoices/">Gmail &amp; invoices</a>'
+        if getattr(request.app.state, "invoice_workspace", False)
+        else "",
+    )
+    return page.replace(
         "<!-- RUNTIME_NOTICE -->",
         '<p class="hint" role="note">Local preview · Simulated classifier responses</p>'
         if get_settings().llm_fake

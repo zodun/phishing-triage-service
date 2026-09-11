@@ -199,3 +199,11 @@ body { background:#0f131d !important; margin:0; }
 @media(max-width:800px) {
   #invoice-composer #draft-message textarea, #invoice-reader textarea { font-size:16px; }
 }
+
+.workspace-navigation { display:flex; flex-direction:column; gap:8px; margin-top:20px; }
+.workspace-navigation a { color:#bcc9cd; text-decoration:none; padding:10px 12px; border-radius:6px; font-size:12px; }
+.workspace-navigation a[aria-current] { background:#12333e; color:#4cd7f6; }
+.workspace-navigation a:hover { background:#313540; }
+.workspace-navigation a:focus-visible { outline:2px solid #4cd7f6; outline-offset:3px; }
+@media(max-width:800px) { .workspace-navigation { flex-direction:row; flex-wrap:wrap; margin-top:8px; gap:4px; } }
+@media(min-width:801px) { body:has(.workspace-navigation) #invoice-sidebar { top:190px; } }

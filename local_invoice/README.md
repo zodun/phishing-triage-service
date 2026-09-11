@@ -2,6 +2,20 @@
 
 A local, single-user Gradio app for reviewing Gmail emails and PDF invoices.
 
+## Unified workspace
+
+Run both workflows together from the repository root:
+
+```sh
+python -m pip install -e . -r local_invoice/requirements-invoice.txt
+python local_invoice/workspace_app.py
+```
+
+Open http://127.0.0.1:8089. The homepage opens Gmail invoice reminders;
+**Inspect pasted email** opens the manual classifier on the same server.
+Google and invoice model setup remain available inside the invoice workspace.
+`WORKSPACE_PORT` changes the local port. The standalone launcher below remains available.
+
 ## Run
 
 Use Python 3.11 or later:
