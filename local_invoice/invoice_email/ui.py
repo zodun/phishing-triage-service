@@ -34,7 +34,7 @@ def phishing_view(selection, analyses):
         else "No reminder was created. Verify this message using contact details you already trust."
     )
     return (
-        f'<section class="phishing-result {risk.status}" role="status"><h3>{escape(risk.label)}</h3><ul>'
+        f'<section class="phishing-result {risk.status}" role="status"><span class="verdict-eyebrow">EMAIL SECURITY CHECK</span><h3>{escape(risk.label)}</h3><span class="verdict-context">What we found</span><ul>'
         + "".join(f"<li>{escape(reason)}</li>" for reason in risk.reasons)
         + f"</ul><p>{escape(note)}</p></section>"
     )
@@ -137,11 +137,11 @@ def _search(query, limit, request: gr.Request = None):
 
     try:
         messages = (_web_mailbox(request) if request else connect_gmail()).search(query, limit)
-        choices = [(f"{m.sender} · {m.subject} · {m.date} · {len(m.attachments)} PDF attachment(s)", m.id) for m in messages]
+        choices = [(f"{m.sender}\n{m.subject}\n{m.date} · {len(m.attachments)} PDF attachment(s)", m.id) for m in messages]
         if not messages:
             return gr.update(choices=[], value=None), (
-                "No emails with a valid PDF attachment or direct PDF link matched your search. "
-                "Open Search options below to widen the date range or search outside your inbox, then try again."
+                "No invoice emails found. "
+                "Open Advanced options to expand the date range or search outside your inbox."
             )
         return gr.update(choices=choices, value=None), (
             f"Found {len(messages)} email(s) with a valid PDF attachment or a direct PDF link "
@@ -157,12 +157,12 @@ def _search(query, limit, request: gr.Request = None):
         if exc.resp.status == 429 or reasons & {"rateLimitExceeded", "userRateLimitExceeded", "quotaExceeded"}:
             message = (
                 "Google is temporarily limiting Gmail requests. Automatic retries did not finish the search. "
-                "Wait a minute, then click Find invoice emails again. Your saved connection does not need setup again."
+                "Wait a minute, then search again."
             )
         elif exc.resp.status == 401:
             message = "Gmail sign-in has expired. Go back to connection and click Connect Gmail."
         elif exc.resp.status == 403:
-            message = "Google denied Gmail access. Go back to connection and reconnect; check Gmail API permissions if it continues."
+            message = "Google did not give permission to read Gmail. Please reconnect your account."
         else:
             message = "Google could not complete this search. Please try again shortly."
         return gr.update(choices=[], value=None), message
@@ -297,7 +297,7 @@ def create_invoice_email_tab(workspace=False):
         apply_default_css=False,
     )
     steps = gr.HTML(_step_heading(1), elem_id="invoice-sidebar", apply_default_css=False)
-    account_bar = gr.HTML("", elem_id="account-bar", apply_default_css=False)
+    account_bar = gr.HTML("", visible=False, elem_id="account-bar", apply_default_css=False)
 
     with gr.Column(elem_id="invoice-shell"):
         with gr.Column(elem_id="step-connect", visible=True) as step_connect:
@@ -308,7 +308,7 @@ def create_invoice_email_tab(workspace=False):
                 upload_check = gr.Button("Read PDF & prepare reminder", variant="primary")
                 upload_status = gr.Markdown("", elem_id="upload-status")
                 upload_setup = gr.Button("Set up invoice reading", visible=False)
-            gr.Markdown("## Check invoice emails safely\nConnect Gmail to find invoice emails and check them for phishing signs.")
+            gr.HTML('<div class="connect-copy"><span class="eyebrow">A SECOND LOOK, BEFORE YOU ACT</span><h2>Check invoice emails<br>safely.</h2><p>Spot suspicious requests. Read the invoice.<br>Know what needs your attention.</p></div>', elem_id="connect-copy", apply_default_css=False)
             web_connection = gr.HTML("", elem_id="web-connection", apply_default_css=False)
             setup_hint = gr.Markdown(_setup_explanation(configured), visible=False)
             start_setup = gr.Button(
@@ -324,7 +324,7 @@ def create_invoice_email_tab(workspace=False):
                 lines=2,
                 placeholder="You’ll choose your Google account in a new tab.",
             )
-            sign_in_link = gr.HTML("", apply_default_css=False)
+            sign_in_link = gr.HTML("", visible=False, apply_default_css=False)
             with gr.Accordion(
                 "Connection settings", open=False, visible=False, elem_id="account-setup"
             ) as setup_panel:
@@ -369,38 +369,40 @@ def create_invoice_email_tab(workspace=False):
                 setup_summary = gr.Textbox(
                     label="What’s left to set up", value=configured["summary"], interactive=False
                 )
-            gr.Markdown("**Read-only access.** You review every reminder before sending.")
+
             gr.HTML(
-                '<section class="draft-preview"><h2>INVOICE &amp; REMINDER</h2>'
-                '<div class="draft-preview-body"><span class="preview-icon" aria-hidden="true">▧</span>'
-                '<h3>Your invoice review appears here</h3>'
-                '<p>Connect Gmail and choose an email. We’ll read its PDF attachment, '
-                'extract the customer and amount due, and prepare a reminder for you to review.</p>'
-                '<div class="preview-facts"><span>Customer</span><span>Amount due</span><span>Due date</span></div>'
-                '</div></section>',
+                '<section class="product-preview" aria-label="Illustrative example, not an actual email">'
+                '<div class="preview-top"><span>HOW IT WORKS</span><span>Example</span></div>'
+                '<div class="sample-email"><span class="sender-avatar">AC</span><div><strong>Acme Accounts</strong>'
+                '<span>Invoice #2189 · PDF attached</span></div><span class="sample-amount">£4,250</span></div>'
+                '<div class="sample-review"><span class="eyebrow">EMAIL SECURITY CHECK</span>'
+                '<h3><span aria-hidden="true">!</span> Be careful</h3><p>Two details deserve a closer look.</p>'
+                '<ul><li>Sender doesn’t match the company</li><li>Payment link uses another website</li></ul></div>'
+                '<div class="preview-bottom">Understand the warning signs before taking action.</div></section>',
                 elem_id="connection-preview", apply_default_css=False,
             )
 
         with gr.Column(elem_id="step-invoice", visible=False) as step_invoice:
-            gr.Markdown("## Choose an invoice\nFind an email, then read its PDF attachments.")
+            gr.Markdown("## Choose an invoice email\nSelect a message to check its contents and read the attached invoice.")
             with gr.Row(elem_id="invoice-selection-panels"):
                 with gr.Column(elem_id="invoice-selection-card"):
-                    search = gr.Button("Find invoice emails", variant="primary")
+                    search = gr.Button("Search invoices", variant="primary")
                     status = gr.Textbox(
                         label="Search and review status",
                         elem_id="workflow-status",
                         interactive=False,
-                        value="Click Find invoice emails, select an email below, then click Check email.",
+                        value="Search invoices, select a message below, then check the selected email.",
                         lines=3,
                     )
                     with gr.Column(visible=True, elem_id="invoice-message-results"):
-                        message_choice = gr.Dropdown(
-                            label="Email with PDF attachment or link",
+                        message_choice = gr.Radio(
+                            label="Invoice emails",
+                    elem_id="invoice-email-list",
                             choices=[],
                             interactive=True,
-                            info="Click Find invoice emails to populate this list, then choose one.",
+                            info="Select a message to review its attachment.",
                         )
-                        analyze = gr.Button("Check this email", variant="primary")
+                        analyze = gr.Button("Check selected email", variant="primary")
                     with gr.Column(visible=False, elem_id="invoice-reading-setup") as reading_setup:
                         gr.Markdown(
                             "**One step left: add your AI key.**\n\n"
@@ -436,11 +438,9 @@ def create_invoice_email_tab(workspace=False):
                     gr.Markdown("### Invoice assessment")
                     phishing_status = gr.HTML("", elem_id="phishing-status", apply_default_css=False)
                     invoice_choice = gr.Dropdown(label="PDF to review", choices=[], interactive=True, visible=False)
-                    invoice_summary = gr.Textbox(
-                        label="Invoice at a glance", interactive=False, lines=2, elem_id="invoice-summary"
-                    )
+                    invoice_summary = gr.HTML("", elem_id="invoice-summary", apply_default_css=False)
                     review_status = gr.Textbox(label="Review notes", lines=2, interactive=False, elem_id="review-status")
-                    with gr.Accordion("See the original invoice", open=False, elem_id="invoice-reader"):
+                    with gr.Accordion("Technical details", open=False, elem_id="invoice-reader"):
                         source = gr.Textbox(label="Text read from the PDF", lines=10, interactive=False)
                         with gr.Accordion("Original email", open=False):
                             email_body = gr.Textbox(label="Email body", lines=6, interactive=False)
@@ -531,7 +531,7 @@ def create_invoice_email_tab(workspace=False):
     def restore_connection(request: gr.Request):
         from .web_auth import connection_html, session
         connected = session(request)
-        return ("" if connected else connection_html(request)), (connection_html(request) if connected else ""), *show_step(2 if connected else 1)
+        return ("" if connected else connection_html(request)), gr.update(value=connection_html(request) if connected else "", visible=bool(connected)), *show_step(2 if connected else 1)
 
     from gradio.context import get_blocks_context
     get_blocks_context().root_block.load(restore_connection, outputs=[web_connection, account_bar, *stage_outputs])
@@ -577,10 +577,18 @@ def create_invoice_email_tab(workspace=False):
         if value is None:
             return "We could not read this invoice. See the message above."
         amount = " ".join(part for part in (value.currency, value.amount_due) if part)
-        return (
-            f"{value.customer_name or 'Customer not found'} · Invoice {value.invoice_number or 'number not found'}\n"
-            + f"Amount: {amount or 'not found'} · Due: {value.due_date or 'date not found'}\nStatus: {value.payment_status}"
-        )
+        fields = [
+            ("Customer", value.customer_name or "Not found"),
+            ("Invoice number", value.invoice_number or "Not found"),
+            ("Amount due", amount or "Not found"),
+            ("Due date", str(value.due_date or "Not found")),
+            ("Payment status", value.payment_status.capitalize()),
+            ("Attachment", result.filename),
+        ]
+        return '<section class="invoice-facts"><h3>Invoice details</h3><dl>' + ''.join(
+            '<div><dt>' + escape(label) + '</dt><dd>' + escape(text) + '</dd></div>'
+            for label, text in fields
+        ) + '</dl></section>'
 
     invoice_choice.change(review_result, [invoice_choice, analyses], review_outputs).then(
         summary, [invoice_choice, analyses], invoice_summary
@@ -698,7 +706,7 @@ def _step_heading(number):
         '<ol class="simple-steps" aria-label="Invoice review progress">'
         + "".join(
             f'<li class="{"current" if i == number else "complete" if i < number else ""}"'
-            f"{' aria-current=step' if i == number else ''}><span>{i}</span>{label}</li>"
+            f"{' aria-current=step' if i == number else ''}><span>{'✓' if i < number else f'{i:02}'}</span>{label}</li>"
             for i, label in enumerate(labels, 1)
         )
         + "</ol>"

@@ -131,7 +131,7 @@ class WorkspaceTests(unittest.IsolatedAsyncioTestCase):
         status = next(
             item["props"] for item in app.config["components"] if item["props"].get("elem_id") == "workflow-status"
         )
-        self.assertIn("Find invoice emails", status["value"])
+        self.assertIn("Search invoices", status["value"])
         search = next(fn for fn in app.fns.values() if fn.name == "_search")
         begin = app.fns[search.trigger_after]
         self.assertIn("Searching", begin.fn()[-1]["value"])

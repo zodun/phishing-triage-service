@@ -1,11 +1,10 @@
 """Run the invoice workflow without the warranty demo's Azure dependencies."""
 
-from pathlib import Path
 import os
 
-from dotenv import load_dotenv
+from runtime_config import load_configuration
 
-load_dotenv(Path(__file__).resolve().parent / ".env")
+load_configuration()
 
 
 def create_app(workspace=False):

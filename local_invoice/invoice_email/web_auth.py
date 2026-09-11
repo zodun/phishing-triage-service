@@ -145,15 +145,29 @@ async def disconnect(request: Request):
     return response
 
 
+GOOGLE_MARK = '<svg class="google-mark" aria-hidden="true" viewBox="0 0 24 24"><path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.8 3-4.3 3-7.3Z"/><path fill="#34A853" d="M12 22c2.7 0 5- .9 6.6-2.5L15.4 17c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.4 13.9A6 6 0 0 1 6.1 12c0-.7.1-1.3.3-1.9V7.5H3.1A10 10 0 0 0 2 12c0 1.6.4 3.2 1.1 4.5l3.3-2.6Z"/><path fill="#EA4335" d="M12 6c1.5 0 2.8.5 3.8 1.5l2.8-2.8A9.6 9.6 0 0 0 12 2a10 10 0 0 0-8.9 5.5l3.3 2.6A6 6 0 0 1 12 6Z"/></svg>'
+
+
 def connection_html(request):
     current = session(request)
     if current:
-        return (f'<div class="connected-account"><strong>Connected to Gmail</strong><p>{escape(current.address)}</p>'
-                f'<a href="/auth/google">Reconnect Gmail</a><form action="/auth/disconnect" method="post"><input type="hidden" name="csrf" value="{current.csrf}"><button type="submit">Disconnect</button></form></div>')
+        return (f'<div class="connected-account"><span class="account-dot" aria-hidden="true">✓</span><div><small>GMAIL CONNECTED</small><strong>{escape(current.address)}</strong></div>'
+                f'<form action="/auth/disconnect" method="post"><input type="hidden" name="csrf" value="{current.csrf}"><button type="submit">Disconnect</button></form></div>')
     if not configured():
-        return '<p>Google sign-in has not been configured for this installation.</p>'
-    if request and request.cookies.get(COOKIE):
-        return '<p>Your Gmail connection has expired.</p><a class="google-signin" href="/auth/google">Reconnect Gmail</a>'
+        return ('<button class="google-signin" disabled>' + GOOGLE_MARK + 'Continue with Google</button>'
+                '<p class="permission-note">Read-only Gmail access</p>'
+                '<aside class="installation-note"><strong>Google connection needs to be set up</strong>'
+                '<span>Add your Google credentials to the installation’s .env file.</span>'
+                '<a href="/help">Developer setup ↗</a></aside>')
+    expired = request and request.cookies.get(COOKIE)
     failed = request and request.cookies.get('phishguard_auth_error') == 'failed'
-    note = '<p>Google sign-in could not finish. Please try again.</p>' if failed else ''
-    return note + '<a class="google-signin" href="/auth/google">Continue with Google</a><p>Read-only Gmail access.</p>'
+    note = '<p class="auth-error">Your Gmail connection has expired. Reconnect to continue.</p>' if expired else '<p class="auth-error">Could not connect to Google. Please try again.</p>' if failed else ''
+    label = 'Reconnect Gmail' if expired else 'Continue with Google'
+    return note + '<a class="google-signin" href="/auth/google">' + GOOGLE_MARK + label + '</a><p class="permission-note">Read-only Gmail access</p>'
+
+
+@router.get('/help')
+def developer_help():
+    from starlette.responses import HTMLResponse
+    from .appearance import workspace_css, HEADER
+    return HTMLResponse('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PhishGuard — Connection setup</title><style>' + workspace_css() + '</style></head><body class="gradio-container">' + HEADER + '''<main class="main help-page"><a href="/invoices/">← Back to invoice review</a><section class="simple-intro"><span class="eyebrow">DEVELOPER SETUP</span><h1>Enable Google sign-in</h1><p>Configure this installation once. End users then choose their Google account.</p></section><ol class="help-steps"><li><h2>Create a Google web client</h2><p>Enable Gmail API in Google Cloud. Configure the consent screen, add test users if needed, and create an OAuth client of type Web application.</p></li><li><h2>Register the callback</h2><code>http://127.0.0.1:8089/auth/google/callback</code><p>Use this exact redirect URI for the default local server.</p></li><li><h2>Configure the server</h2><p>Copy .env.example to .env in the project root. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI. Configure your invoice provider key there too. Keep this file private.</p></li><li><h2>Restart the app</h2><code>python local_invoice/workspace_app.py</code><p>Return to invoice review and select Continue with Google.</p></li></ol><p><a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener noreferrer">Open Google Cloud ↗</a></p></main></body></html>''')

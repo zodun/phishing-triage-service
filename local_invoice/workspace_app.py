@@ -4,11 +4,11 @@ import os
 import sys
 from pathlib import Path
 
-from dotenv import load_dotenv
+from runtime_config import load_configuration
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT.parent))
-load_dotenv(ROOT / ".env")
+load_configuration()
 
 
 def create_workspace():

@@ -27,7 +27,7 @@ copying or downloading a reminder. The app never sends the email automatically.
 ## Use the app
 
 1. Select **Continue with Google** and approve read-only Gmail access.
-2. Select **Find invoice emails**, choose a message, then **Check this email**.
+2. Select **Search invoices**, choose a message, then **Check selected email**.
 3. Review the email check, invoice details and editable reminder. Copy or download
    the draft when ready. The app never sends email automatically.
 
@@ -80,8 +80,9 @@ DEEPSEEK_API_KEY=your-provider-key
 INVOICE_MODEL=deepseek-chat
 ```
 
-Use an ignored `local_invoice/.env` or your process environment; never commit these
-values. OpenAI is also supported with `INVOICE_MODEL_PROVIDER=openai`, `OPENAI_API_KEY`,
+Copy the root `.env.example` to `.env`, then fill in the Google credentials and provider key.
+The process environment takes priority, followed by the root `.env`, then the legacy
+`local_invoice/.env`. Never commit populated configuration files. OpenAI is also supported with `INVOICE_MODEL_PROVIDER=openai`, `OPENAI_API_KEY`,
 and an appropriate `INVOICE_MODEL`. See the provider configuration in `settings.py`.
 
 In Google Cloud, enable Gmail API, configure the consent screen, and create an
