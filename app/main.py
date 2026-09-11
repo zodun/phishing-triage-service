@@ -33,7 +33,9 @@ _INDEX_HTML = (
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     setup_logging(settings.log_level)
-    app.state.classifier = Classifier(settings)
+    app.state.classifier = (
+        Classifier(settings) if settings.llm_fake or settings.deepseek_api_key.strip() else None
+    )
     log.info(
         "startup",
         service=settings.service_name,
@@ -80,7 +82,11 @@ async def root(request: Request) -> str:
         "<!-- RUNTIME_NOTICE -->",
         '<p class="hint" role="note">Local preview · Simulated classifier responses</p>'
         if get_settings().llm_fake
-        else "",
+        else (
+            '<p class="hint" role="note">AI analysis needs to be configured.</p>'
+            if not get_settings().deepseek_api_key.strip()
+            else ""
+        ),
     )
 
 
@@ -97,7 +103,9 @@ async def metrics() -> Response:
 @app.post("/v1/classify", response_model=ClassifyResponse)
 async def classify(req: ClassifyRequest, request: Request) -> ClassifyResponse:
     request_id = getattr(request.state, "request_id", uuid.uuid4().hex[:12])
-    classifier: Classifier = request.app.state.classifier
+    classifier: Classifier | None = request.app.state.classifier
+    if classifier is None:
+        raise HTTPException(status_code=503, detail="AI analysis needs to be configured.")
     try:
         result = await run_in_threadpool(classifier.classify, req.text, request_id=request_id)
     except Exception as exc:  # noqa: BLE001 - surface any upstream failure as 502
