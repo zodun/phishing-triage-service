@@ -68,24 +68,14 @@ async def request_context(
 
 
 @app.get("/", response_class=HTMLResponse)
-async def incident() -> str:
-    return (
-        (_WEB / "incident.html")
-        .read_text(encoding="utf-8")
-        .replace(
-            "<!-- UI_FONTS -->",
-            "<style>" + (_WEB / "fonts.css").read_text(encoding="utf-8") + "</style>",
-        )
-        .replace(
-            "<!-- INCIDENT_CSS -->",
-            "<style>" + (_WEB / "incident.css").read_text(encoding="utf-8") + "</style>",
-        )
-    )
-
-
 @app.get("/inspect", response_class=HTMLResponse)
 async def root() -> str:
-    return _INDEX_HTML
+    return _INDEX_HTML.replace(
+        "<!-- RUNTIME_NOTICE -->",
+        '<p class="hint" role="note">Local preview · Simulated classifier responses</p>'
+        if get_settings().llm_fake
+        else "",
+    )
 
 
 @app.get("/healthz")
