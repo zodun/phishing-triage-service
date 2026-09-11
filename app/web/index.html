@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>PhishGuard — Phishing Triage Service</title>
+<title>PhishGuard — Email Inspection</title>
 <!-- UI_FONTS -->
 <style>
 :root {
@@ -27,11 +27,11 @@ button, a, textarea, summary { -webkit-tap-highlight-color: transparent; }
 svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 .app { min-height: 100svh; }
 .sidebar { position:sticky; top:0; z-index:20; height:72px; padding:0 32px; background:var(--canvas); border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:24px; }
-.brand { display: flex; align-items: center; gap: 10px; padding: 0 10px; font-size: 16px; font-weight: 650; letter-spacing: -.025em; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 10px; font-size: 18px; font-weight: 650; letter-spacing: -.025em; }
 .brand svg { width:32px; height:36px; color:var(--accent); }
 .brand-subtitle { display:block; margin-top:2px; font:10px/1.5 var(--mono); color:var(--accent); letter-spacing:.05em; text-transform:uppercase; }
 .nav { display:flex; align-items:center; gap:8px; }
-.nav a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; color: var(--muted); text-decoration: none; font-size: 13px; border-radius: 6px; }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 10px 14px; color: var(--muted); text-decoration: none; font-size: 13px; border-radius: 6px; }
 .nav a:hover { background: var(--hover); color: var(--ink); }
 .nav a[aria-current] { background:var(--selected); color:var(--accent); font-weight:600; }
 .rail-note { display:none; }
@@ -141,7 +141,7 @@ summary { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
 /* Reference composition adapted to the classifier's supported workflow. */
-.sidebar { height:64px; background:rgba(15,19,29,.96); backdrop-filter:blur(16px); border-bottom:1px solid #262a35; }
+.sidebar { background:rgba(15,19,29,.96); backdrop-filter:blur(16px); border-bottom:1px solid #262a35; }
 .content,.topbar { max-width:1100px; }
 .page-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:24px; }
 .eyebrow { color:var(--accent); font:10px/1.5 var(--mono); letter-spacing:.08em; }
@@ -179,12 +179,10 @@ html { scroll-padding-top:84px; }
 <body>
 <div class="app">
 <aside class="sidebar">
-<div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.7 7.5 9.5 7.5 9.5s7.5-4.8 7.5-9.5V6L12 3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg><span>PhishGuard<span class="brand-subtitle">Email threat inspection</span></span></div>
+<div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.7 7.5 9.5 7.5 9.5s7.5-4.8 7.5-9.5V6L12 3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg><span>PhishGuard<span class="brand-subtitle">EMAIL &amp; INVOICE REVIEW</span></span></div>
 <nav class="nav" aria-label="Workspace">
 <!-- WORKSPACE_NAV -->
-<a href="#email-form" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg>Email inspection</a>
-
-<a href="#result-panel" class="health-link"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>Assessment</a>
+<a href="#email-form" aria-current="page">Email inspection</a>
 </nav>
 <div class="rail-note"><strong>A second look, before you act.</strong><p>Review the sender, the message, and the evidence together.</p></div>
 </aside>

@@ -92,7 +92,7 @@ def model_configuration():
         else os.getenv("OPENAI_AGENTS_API_KEY") or os.getenv("EVAL_MODEL_API_KEY", ""),
         "model": os.getenv("INVOICE_MODEL")
         or (
-            "deepseek-v4-flash"
+            "deepseek-chat"
             if provider == "deepseek"
             else "gpt-4.1-mini"
             if provider == "openai"

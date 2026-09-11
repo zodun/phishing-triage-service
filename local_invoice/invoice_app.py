@@ -12,7 +12,9 @@ def create_app(workspace=False):
     import gradio as gr
     from invoice_email.ui import create_invoice_email_tab
 
-    with gr.Blocks(title="Invoice Email", fill_width=True, delete_cache=(3600, 3600)) as app:
+    with gr.Blocks(
+        title="PhishGuard — Invoice Reminders", fill_width=True, delete_cache=(3600, 3600)
+    ) as app:
         create_invoice_email_tab(workspace=workspace)
     return app
 

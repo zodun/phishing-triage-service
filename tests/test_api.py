@@ -8,12 +8,13 @@ def test_healthz():
         assert client.get("/healthz").json() == {"status": "ok"}
 
 
-def test_root_serves_demo_page():
+def test_root_serves_inspection_page():
     with TestClient(app) as client:
         resp = client.get("/")
         assert resp.status_code == 200
         assert "text/html" in resp.headers["content-type"]
-        assert "Phishing Triage Service" in resp.text
+        assert "PhishGuard — Email Inspection" in resp.text
+        assert 'id="email-form"' in resp.text
 
 
 def test_metrics_exposed():

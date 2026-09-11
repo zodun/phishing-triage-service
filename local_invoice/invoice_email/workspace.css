@@ -269,3 +269,7 @@ body { background:#0f131d !important; margin:0; }
  #invoice-selection-panels,#invoice-review-panels { flex-direction:column; }
  #invoice-selection-card,#invoice-evidence-card,#invoice-composer,#invoice-selection-preview { flex:auto; width:100%; }
 }
+
+#direct-upload { background:#0a0e18; border:1px solid #3d494c; border-radius:8px; padding:12px; }
+#step-connect > #connection-preview { grid-row:1 / span 16; }
+@media(max-width:800px) { #step-connect > #connection-preview { grid-row:auto; } }

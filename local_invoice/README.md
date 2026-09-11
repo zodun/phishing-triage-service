@@ -30,6 +30,15 @@ python3 -m venv .venv
 Open http://127.0.0.1:7860 in Safari or another browser. The app must have network
 access to Google and your selected AI provider. Its layout expands with the window.
 
+## Read a PDF without Gmail
+
+Open **Upload a PDF — no Gmail setup needed**, choose a text-based PDF, and select
+**Read PDF & prepare reminder**. Add an AI key under **Set up invoice reading** if
+needed. Google credentials are not required for this path. Optional email context
+is assessed with the document; sender identity and delivery headers are not verified.
+Scanned PDFs still require OCR before upload. Review the extracted facts before
+copying or downloading a reminder. The app never sends the email automatically.
+
 ## Setup and use
 
 1. In Account setup, import a Google Desktop OAuth client with the Gmail API enabled.
