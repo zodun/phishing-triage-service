@@ -28,3 +28,17 @@ Ruff and mypy; WebKit layout checks at 390, 768, and 1440 pixels for
 
 This audit does not certify that every possible defect is eliminated. The hosted
 interface is available for review; live cloud mailbox workflows are not release-ready.
+
+## Browser workflow verification
+
+The `workflow_fixture.py` and `browser_workflow.py` scripts in local_invoice/tests
+exercise real PDF upload/parsing, evidence validation, reminder composition,
+subject editing, .eml generation/download, invalidation after edits, and mailbox
+search/selection. Gmail and AI are explicitly substituted; this is not a live
+Google or DeepSeek acceptance test. The fixture is excluded from Vercel uploads.
+
+The browser test reproduced a stale export link: the Textbox input callback did
+not reliably invalidate it. Binding to change and returning an explicit empty
+File update fixes it. The HTTP smoke test also now checks the current app title.
+Production classification was checked with synthetic text and returns the expected
+503 configuration error because DEEPSEEK_API_KEY is still absent.

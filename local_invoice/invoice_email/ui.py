@@ -622,7 +622,7 @@ def create_invoice_email_tab(workspace=False):
 
     export.click(download_draft, [recipient, subject, body, eligible], download)
     for control in (recipient, subject, body):
-        control.input(lambda: None, outputs=download)
+        control.change(lambda: gr.update(value=None), outputs=download, queue=False)
 
     start_setup.click(lambda: gr.update(open=True), outputs=setup_panel, queue=False)
     back_connect.click(lambda: show_step(1), outputs=stage_outputs, queue=False)
