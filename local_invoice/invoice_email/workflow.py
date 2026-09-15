@@ -19,10 +19,10 @@ class Analysis:
 
 
 def analyze_message(
-    mailbox, message, extractor, *, today: date | None = None, signature="Accounts Receivable"
+    mailbox, message, extractor, *, today: date | None = None, signature="Accounts Receivable", document_only=False
 ) -> list[Analysis]:
     results = []
-    email_check = scan_message(message)
+    email_check = scan_message(message, document_only=document_only)
     for attachment in message.attachments:
         result = Analysis(attachment.filename, phishing=email_check)
         try:
@@ -30,7 +30,7 @@ def analyze_message(
                 results.append(result)
                 continue
             result.text = extract_pdf_text(mailbox.download_attachment(message.id, attachment))
-            result.phishing = scan_message(message, result.text)
+            result.phishing = scan_message(message, result.text, document_only=document_only)
             if result.phishing.can_draft:
                 try:
                     model_check = extractor.assess_phishing(result.text, message)
@@ -58,5 +58,9 @@ def analyze_message(
         except Exception:
             # Provider errors can contain document text or credentials. Do not expose them in UI/logs.
             result.error = "Could not process this attachment. Check Gmail/model access and retry."
+            result.phishing = PhishingAssessment(
+                status="unable_to_assess",
+                reasons=["The document review did not finish. Retry before preparing a reminder."],
+            )
         results.append(result)
     return results

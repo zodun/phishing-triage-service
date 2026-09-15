@@ -48,7 +48,7 @@ class InvoiceExtractor:
                 raise ValueError("Add your DeepSeek API key in Account setup.")
             return cls(
                 OpenAI(api_key=config["api_key"], base_url="https://api.deepseek.com", timeout=60, max_retries=1),
-                config.get("model", "deepseek-v4-flash"),
+                config.get("model", "deepseek-chat"),
                 {"extra_body": {"thinking": {"type": "disabled"}}, "max_tokens": 4096},
             )
         if provider == "openai":

@@ -1,24 +1,26 @@
 """Run the invoice workflow without the warranty demo's Azure dependencies."""
 
-from pathlib import Path
 import os
 
-from dotenv import load_dotenv
+from runtime_config import load_configuration
 
-load_dotenv(Path(__file__).resolve().parent / ".env")
+load_configuration()
 
 
-def create_app():
+def create_app(workspace=False):
     import gradio as gr
     from invoice_email.ui import create_invoice_email_tab
 
-    with gr.Blocks(title="Invoice Email", fill_width=True, delete_cache=(3600, 3600)) as app:
-        create_invoice_email_tab()
+    with gr.Blocks(
+        title="PhishGuard — Invoice Reminders", fill_width=True, delete_cache=(3600, 3600)
+    ) as app:
+        create_invoice_email_tab(workspace=workspace)
+        gr.HTML('<a class="repository-link" href="https://github.com/zodun/phishing-triage-service" target="_blank" rel="noopener noreferrer">GitHub repository ↗</a>', apply_default_css=False)
     return app
 
 
 if __name__ == "__main__":
-    port = os.getenv("INVOICE_APP_PORT")
-    create_app().launch(
-        server_name="127.0.0.1", server_port=int(port) if port else None, share=False, show_error=False, footer_links=[]
-    )
+    import uvicorn
+    from workspace_app import create_workspace
+
+    uvicorn.run(create_workspace(), host="127.0.0.1", port=int(os.getenv("WORKSPACE_PORT", "8089")), access_log=False)

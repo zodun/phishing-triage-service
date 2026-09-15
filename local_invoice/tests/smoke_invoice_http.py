@@ -16,9 +16,9 @@ def main():
         assert response.status == 200
     with urlopen(url + "/config", timeout=10) as response:
         config = json.load(response)
-    assert config["title"] == "Invoice Email"
+    assert config["title"] == "PhishGuard — Invoice Reminders"
     labels = {component["props"].get("label") for component in config["components"]}
-    assert {"Email draft", "To — customer email", "PDF to review"}.issubset(labels)
+    assert {"Message", "To", "PDF to review"}.issubset(labels)
     client = Client(url, verbose=False, analytics_enabled=False)
     try:
         result = client.predict(None, "Accounts Receivable", api_name="/_analyze")

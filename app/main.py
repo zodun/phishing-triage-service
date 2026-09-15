@@ -18,14 +18,24 @@ from app.observability import LATENCY, REQUESTS, get_logger, setup_logging
 from app.schemas import ClassifyRequest, ClassifyResponse
 
 log = get_logger("api")
-_INDEX_HTML = (Path(__file__).parent / "web" / "index.html").read_text(encoding="utf-8")
+_WEB = Path(__file__).parent / "web"
+_INDEX_HTML = (
+    (_WEB / "index.html")
+    .read_text(encoding="utf-8")
+    .replace(
+        "<!-- UI_FONTS -->",
+        "<style>" + (_WEB / "fonts.css").read_text(encoding="utf-8") + "</style>",
+    )
+)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     setup_logging(settings.log_level)
-    app.state.classifier = Classifier(settings)
+    app.state.classifier = (
+        Classifier(settings) if settings.llm_fake or settings.deepseek_api_key.strip() else None
+    )
     log.info(
         "startup",
         service=settings.service_name,
@@ -60,8 +70,24 @@ async def request_context(
 
 
 @app.get("/", response_class=HTMLResponse)
-async def root() -> str:
-    return _INDEX_HTML
+@app.get("/inspect", response_class=HTMLResponse)
+async def root(request: Request) -> str:
+    page = _INDEX_HTML.replace(
+        "<!-- WORKSPACE_NAV -->",
+        '<a href="/invoices/">Invoice reminders</a>'
+        if getattr(request.app.state, "invoice_workspace", False)
+        else "",
+    )
+    return page.replace(
+        "<!-- RUNTIME_NOTICE -->",
+        '<p class="hint" role="note">Local preview · Simulated classifier responses</p>'
+        if get_settings().llm_fake
+        else (
+            '<p class="hint" role="note">AI analysis needs to be configured.</p>'
+            if not get_settings().deepseek_api_key.strip()
+            else ""
+        ),
+    )
 
 
 @app.get("/healthz")
@@ -77,7 +103,9 @@ async def metrics() -> Response:
 @app.post("/v1/classify", response_model=ClassifyResponse)
 async def classify(req: ClassifyRequest, request: Request) -> ClassifyResponse:
     request_id = getattr(request.state, "request_id", uuid.uuid4().hex[:12])
-    classifier: Classifier = request.app.state.classifier
+    classifier: Classifier | None = request.app.state.classifier
+    if classifier is None:
+        raise HTTPException(status_code=503, detail="AI analysis needs to be configured.")
     try:
         result = await run_in_threadpool(classifier.classify, req.text, request_id=request_id)
     except Exception as exc:  # noqa: BLE001 - surface any upstream failure as 502

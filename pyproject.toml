@@ -12,6 +12,11 @@ dependencies = [
     "structlog>=24.4",
     "prometheus-client>=0.21",
     "pyyaml>=6.0",
+    "gradio>=6.26,<7",
+    "python-dotenv>=1.0,<2",
+    "pypdf>=5,<7",
+    "google-api-python-client>=2,<3",
+    "google-auth-oauthlib>=1.2,<2",
 ]
 
 [project.optional-dependencies]
@@ -32,7 +37,7 @@ build-backend = "setuptools.build_meta"
 include = ["app*", "evals*"]
 
 [tool.setuptools.package-data]
-app = ["web/*.html"]
+app = ["web/*.html", "web/*.css", "web/licenses/*.txt"]
 
 [tool.ruff]
 line-length = 100
@@ -61,3 +66,6 @@ filterwarnings = [
     # starlette's TestClient uses an anyio alias newer anyio deprecated; not our code
     "ignore:The anyio.abc.BlockingPortal alias is deprecated:DeprecationWarning",
 ]
+
+[tool.vercel]
+entrypoint = "vercel_app:app"

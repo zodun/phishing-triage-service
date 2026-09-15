@@ -24,6 +24,11 @@ jobs:
           ruff format --check .
       - name: Type-check
         run: mypy app evals
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: UI interaction tests
+        run: node --test tests/ui.test.cjs
       - name: Unit tests
         run: pytest --cov=app --cov-report=term-missing --cov-report=xml
       - uses: actions/upload-artifact@v4

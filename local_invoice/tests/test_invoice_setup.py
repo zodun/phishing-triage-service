@@ -129,9 +129,9 @@ class WorkspaceTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("invoice-message-results", props)
         self.assertTrue(props["invoice-message-results"]["visible"])
         status = next(
-            item["props"] for item in app.config["components"] if item["props"].get("label") == "What’s happening"
+            item["props"] for item in app.config["components"] if item["props"].get("elem_id") == "workflow-status"
         )
-        self.assertIn("Find invoice emails", status["value"])
+        self.assertIn("Search invoices", status["value"])
         search = next(fn for fn in app.fns.values() if fn.name == "_search")
         begin = app.fns[search.trigger_after]
         self.assertIn("Searching", begin.fn()[-1]["value"])
@@ -145,7 +145,7 @@ class WorkspaceTests(unittest.IsolatedAsyncioTestCase):
         ):
             app = create_app()
         props = {item["props"].get("elem_id"): item["props"] for item in app.config["components"]}
-        self.assertTrue(props["invoice-reading-setup"]["visible"])
+        self.assertFalse(props["invoice-reading-setup"]["visible"])
         self.assertIn("AI key", props["invoice-reading-help"]["value"])
 
     async def test_workspace_has_setup_and_distinct_reading_and_writing_areas(self):

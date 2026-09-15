@@ -8,12 +8,13 @@ def test_healthz():
         assert client.get("/healthz").json() == {"status": "ok"}
 
 
-def test_root_serves_demo_page():
+def test_root_serves_inspection_page():
     with TestClient(app) as client:
         resp = client.get("/")
         assert resp.status_code == 200
         assert "text/html" in resp.headers["content-type"]
-        assert "Phishing Triage Service" in resp.text
+        assert "PhishGuard — Email Inspection" in resp.text
+        assert 'id="email-form"' in resp.text
 
 
 def test_metrics_exposed():
@@ -35,3 +36,18 @@ def test_classify_endpoint():
 def test_classify_rejects_empty_text():
     with TestClient(app) as client:
         assert client.post("/v1/classify", json={"text": ""}).status_code == 422
+
+
+def test_missing_model_key_keeps_ui_available(monkeypatch):
+    from app.config import Settings
+
+    monkeypatch.setattr(
+        "app.main.get_settings",
+        lambda: Settings(_env_file=None, deepseek_api_key="", llm_fake=False),
+    )
+    with TestClient(app) as client:
+        assert client.get("/healthz").status_code == 200
+        assert "AI analysis needs to be configured" in client.get("/inspect").text
+        response = client.post("/v1/classify", json={"text": "Review this email please."})
+        assert response.status_code == 503
+        assert response.json()["detail"] == "AI analysis needs to be configured."

@@ -18,3 +18,4 @@ reports/
 gmail-client.json
 gmail-token.json
 *.eml
+.vercel

@@ -19,7 +19,7 @@ class PhishingAssessment(BaseModel):
         return {
             "suspicious": "Suspicious — possible phishing",
             "no_obvious_signs": "No obvious warning signs",
-            "unable_to_assess": "Unable to assess",
+            "unable_to_assess": "Be careful — check incomplete",
         }[self.status]
 
     @property
@@ -71,7 +71,7 @@ def _host(url):
         return ""
 
 
-def scan_message(message, pdf_text=""):
+def scan_message(message, pdf_text="", *, document_only=False):
     warnings = []
     context = []
     sender = _domain(message.sender)
@@ -139,7 +139,7 @@ def scan_message(message, pdf_text=""):
     warnings = list(dict.fromkeys(warnings))
     if warnings:
         return PhishingAssessment(status="suspicious", reasons=warnings[:12])
-    if not sender or not message.scan_complete:
+    if (not sender and not document_only) or not message.scan_complete:
         return PhishingAssessment(
             status="unable_to_assess",
             reasons=[
@@ -149,7 +149,7 @@ def scan_message(message, pdf_text=""):
     return PhishingAssessment(
         status="no_obvious_signs",
         reasons=[
-            "No strong warning signs were found by the automatic address, link, and text checks.",
+            ("Document text checked; email sender and delivery headers were not provided." if document_only else "No strong warning signs were found by the automatic address, link, and text checks."),
             *list(dict.fromkeys(context)),
         ][:12],
     )

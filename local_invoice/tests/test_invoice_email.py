@@ -447,7 +447,7 @@ class UITests(unittest.IsolatedAsyncioTestCase):
             create_invoice_email_tab()
         self.assertTrue(app.config["dependencies"])
         buttons = [item["props"].get("value") for item in app.config["components"] if item["type"] == "button"]
-        self.assertIn("Check email", buttons)
+        self.assertIn("Check selected email", buttons)
         self.assertNotIn("Check email & write reminder", buttons)
         reminder = build_reminder(invoice(), source_text=TEXT, today=date(2026, 9, 9))
         values = review_result(
@@ -477,7 +477,7 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         locks = lock.fn()
         self.assertTrue(all(update["interactive"] is False for update in locks))
         labels = {getattr(control, "label", None) for control in lock.outputs}
-        self.assertIn("Email with PDF attachment or link", labels)
+        self.assertIn("Invoice emails", labels)
         self.assertIn("PDF to review", labels)
         unlock = next(fn for fn in app.fns.values() if fn.trigger_after == analysis._id)
         self.assertTrue(all(update["interactive"] is True for update in unlock.fn()))
