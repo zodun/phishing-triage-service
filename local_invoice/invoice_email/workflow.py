@@ -58,5 +58,9 @@ def analyze_message(
         except Exception:
             # Provider errors can contain document text or credentials. Do not expose them in UI/logs.
             result.error = "Could not process this attachment. Check Gmail/model access and retry."
+            result.phishing = PhishingAssessment(
+                status="unable_to_assess",
+                reasons=["The document review did not finish. Retry before preparing a reminder."],
+            )
         results.append(result)
     return results

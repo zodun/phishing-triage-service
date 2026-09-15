@@ -256,7 +256,8 @@ def _analyze_upload(path, context, signature):
         return (
             message.body, results,
             gr.update(choices=[(document.name, "0")], value="0"),
-            "PDF reviewed. Verify the extracted details before using the reminder.",
+            ("PDF review could not finish. See the assessment for details." if any(r.error for r in results)
+             else "PDF checked. Review the assessment and extracted details."),
             *review_result("0", results),
         )
     except ValueError as exc:
@@ -560,10 +561,13 @@ def create_invoice_email_tab(workspace=False):
         lambda results: (*show_step(3 if results else 1), gr.update(visible=False)),
         analyses, [*stage_outputs, invoice_choice],
     )
-    upload_setup.click(
-        lambda: (gr.update(open=True), gr.update(open=True), gr.update(open=False)),
-        outputs=[setup_panel, ai_panel, google_panel], queue=False,
-    )
+    if workspace:
+        upload_setup.click(fn=None, js="() => { window.location.href = '/help'; }", queue=False)
+    else:
+        upload_setup.click(
+            lambda: (gr.update(open=True), gr.update(open=True), gr.update(open=False)),
+            outputs=[setup_panel, ai_panel, google_panel], queue=False,
+        )
     upload_pdf.change(lambda: ([], *review_result(None, [])), outputs=[analyses, *review_outputs])
 
     def summary(selection, results):
@@ -622,11 +626,14 @@ def create_invoice_email_tab(workspace=False):
 
     start_setup.click(lambda: gr.update(open=True), outputs=setup_panel, queue=False)
     back_connect.click(lambda: show_step(1), outputs=stage_outputs, queue=False)
-    reading_setup_button.click(
-        lambda: (*show_step(1), gr.update(open=True), gr.update(open=True), gr.update(open=False), True),
-        outputs=[*stage_outputs, setup_panel, ai_panel, google_panel, setup_from_invoice],
-        queue=False,
-    )
+    if workspace:
+        reading_setup_button.click(fn=None, js="() => { window.location.href = '/help'; }", queue=False)
+    else:
+        reading_setup_button.click(
+            lambda: (*show_step(1), gr.update(open=True), gr.update(open=True), gr.update(open=False), True),
+            outputs=[*stage_outputs, setup_panel, ai_panel, google_panel, setup_from_invoice],
+            queue=False,
+        )
     back_invoice.click(
         lambda: (*show_step(1), [], *review_result(None, [])),
         outputs=[*stage_outputs, analyses, *review_outputs],

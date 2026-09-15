@@ -84,3 +84,24 @@ class GoogleSignInTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Reconnect Gmail'):
             auth.mailbox(Mock(cookies={auth.COOKIE:'mine'}))
         self.assertNotIn('mine', auth._sessions)
+
+
+class SetupHelpTests(unittest.TestCase):
+    def setUp(self):
+        app = FastAPI()
+        app.include_router(auth.router)
+        self.client = TestClient(app)
+
+    def test_hosted_help_uses_production_callback_and_vercel_settings(self):
+        with patch.dict(os.environ, {'VERCEL': '1', 'GOOGLE_REDIRECT_URI': ''}):
+            page = self.client.get('/help')
+        self.assertEqual(page.status_code, 200)
+        self.assertIn('https://phishing-triage-service.vercel.app/auth/google/callback', page.text)
+        self.assertIn('Open Vercel settings', page.text)
+        self.assertNotIn('127.0.0.1', page.text)
+
+    def test_callback_text_is_escaped(self):
+        with patch.dict(os.environ, {'GOOGLE_REDIRECT_URI': '<script>alert(1)</script>'}):
+            page = self.client.get('/help')
+        self.assertNotIn('<script>alert(1)</script>', page.text)
+        self.assertIn('&lt;script&gt;', page.text)

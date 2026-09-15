@@ -39,3 +39,17 @@ class UploadTests(unittest.TestCase):
         factory.return_value.extract.assert_not_called()
         self.assertFalse(result[-1])
         self.assertTrue(result[1][0].error)
+
+    def test_provider_failure_does_not_report_successful_review(self):
+        extractor = Mock()
+        extractor.assess_phishing.return_value = PhishingAssessment(status='no_obvious_signs', reasons=['Document checked'])
+        extractor.extract.side_effect = RuntimeError('private provider details')
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'invoice.pdf'
+            path.write_bytes(make_pdf(TEXT))
+            with patch('invoice_email.ui.setup_status', return_value={'model_ready': True}), patch('invoice_email.ui.InvoiceExtractor.from_env', return_value=extractor):
+                result = _analyze_upload(str(path), '', '')
+        self.assertFalse(result[-1])
+        self.assertEqual(result[1][0].phishing.status, 'unable_to_assess')
+        self.assertNotIn('private provider details', str(result))
+        self.assertNotIn('PDF reviewed.', result[3])

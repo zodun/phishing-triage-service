@@ -1,24 +1,13 @@
-# PhishGuard invoice review
+# PhishGuard visual system
 
-Use the user's supplied PhishGuard HTML as the visual reference: dark navy canvas
-(#0f131d), layered inspection surfaces (#171b26, #1c1f2a), deepest inset fields
-(#0a0e18), cyan primary actions (#4cd7f6 with #003640 text), pale body text
-(#dfe2f1), and coral warning states. Geist carries the body and headings;
-JetBrains Mono carries compact technical labels. Fonts are bundled locally under
-their included SIL Open Font Licenses.
+Use neutral black (#101010), charcoal surfaces (#1c1c1c), white text (#f5f5f5),
+and gray secondary text (#bdbdbd). Primary actions are white with black text.
+Amber is reserved for warnings; successful checks use neutral text and explicit labels.
+Google retains its recognizable brand mark. Avoid decorative colored badges and shadows.
 
-Retain the tested desktop workflow rail and compact mobile step navigation. Main
-content shows the actual connection, invoice selection, and review workflow.
-Group the draft into an email document. Show real phishing findings and invoice
-facts; the reference's simulated SOC metrics, authentication verdicts, sandbox
-results, and quarantine actions are not service capabilities.
+Use Geist for interface text, compact 6–8px corners, clear focus outlines, and
+responsive layouts. Keep the invoice and inspection pages consistent. Show the
+GitHub repository in the footer. Preserve read-only Gmail, evidence checks,
+draft review, reduced motion, browser zoom, and all existing workflow controls.
 
-Use 6–8px corners, compact disclosures, clear focus rings, 40px desktop and 44px
-mobile controls, and visible labeled status colors. Preserve browser zoom and
-native scrolling. The classifier also adopts the reference's mobile action dock
-and bottom navigation using its actual inspection, assessment, and API links.
-
-Load global CSS through Gradio's launch-level HTML head to avoid its selector
-rewriting inside media queries. Disable default presentation CSS on custom HTML
-components. Preserve phishing and drafting eligibility rules, read-only Gmail
-access, and reduced-motion behavior.
+Load shared CSS through the HTML head so Gradio does not rewrite responsive selectors.

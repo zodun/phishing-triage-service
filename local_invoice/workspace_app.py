@@ -36,8 +36,8 @@ def create_workspace():
         show_error=False,
         head="<style>" + workspace_css() + "</style>",
         theme=gr.themes.Base(
-            primary_hue="blue",
-            neutral_hue="slate",
+            primary_hue="gray",
+            neutral_hue="gray",
             font=["-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
             font_mono=["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
         ),

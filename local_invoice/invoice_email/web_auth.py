@@ -157,8 +157,8 @@ def connection_html(request):
         return ('<button class="google-signin" disabled>' + GOOGLE_MARK + 'Continue with Google</button>'
                 '<p class="permission-note">Read-only Gmail access</p>'
                 '<aside class="installation-note"><strong>Google connection needs to be set up</strong>'
-                '<span>Add your Google credentials to the installation’s .env file.</span>'
-                '<a href="/help">Developer setup ↗</a></aside>')
+                '<span>The app owner needs to connect Google once. You can still upload a PDF.</span>'
+                '<a href="/help">Connection setup ↗</a></aside>')
     expired = request and request.cookies.get(COOKIE)
     failed = request and request.cookies.get('phishguard_auth_error') == 'failed'
     note = '<p class="auth-error">Your Gmail connection has expired. Reconnect to continue.</p>' if expired else '<p class="auth-error">Could not connect to Google. Please try again.</p>' if failed else ''
@@ -170,4 +170,41 @@ def connection_html(request):
 def developer_help():
     from starlette.responses import HTMLResponse
     from .appearance import workspace_css, HEADER
-    return HTMLResponse('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PhishGuard — Connection setup</title><style>' + workspace_css() + '</style></head><body class="gradio-container">' + HEADER + '''<main class="main help-page"><a href="/invoices/">← Back to invoice review</a><section class="simple-intro"><span class="eyebrow">DEVELOPER SETUP</span><h1>Enable Google sign-in</h1><p>Configure this installation once. End users then choose their Google account.</p></section><ol class="help-steps"><li><h2>Create a Google web client</h2><p>Enable Gmail API in Google Cloud. Configure the consent screen, add test users if needed, and create an OAuth client of type Web application.</p></li><li><h2>Register the callback</h2><code>http://127.0.0.1:8089/auth/google/callback</code><p>Use this exact redirect URI for the default local server.</p></li><li><h2>Configure the server</h2><p>Copy .env.example to .env in the project root. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI. Configure your invoice provider key there too. Keep this file private.</p></li><li><h2>Restart the app</h2><code>python local_invoice/workspace_app.py</code><p>Return to invoice review and select Continue with Google.</p></li></ol><p><a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener noreferrer">Open Google Cloud ↗</a></p></main></body></html>''')
+
+    hosted = bool(os.getenv("VERCEL"))
+    callback = os.getenv("GOOGLE_REDIRECT_URI") or (
+        "https://phishing-triage-service.vercel.app/auth/google/callback"
+        if hosted else "http://127.0.0.1:8089/auth/google/callback"
+    )
+    configuration = (
+        '<p>In Vercel, open Project Settings → Environment Variables. Add '
+        'GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI. '
+        'Add DEEPSEEK_API_KEY and set INVOICE_MODEL_PROVIDER to deepseek for invoice reading.</p>'
+        '<p><a href="https://vercel.com/zoduns-projects/phishing-triage-service/settings/environment-variables" '
+        'target="_blank" rel="noopener noreferrer">Open Vercel settings ↗</a></p>'
+        if hosted else
+        '<p>Copy .env.example to .env in the project root. Set GOOGLE_CLIENT_ID, '
+        'GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, DEEPSEEK_API_KEY, and '
+        'INVOICE_MODEL_PROVIDER=deepseek. Keep this file private.</p>'
+    )
+    restart = "Redeploy the project in Vercel after saving the variables." if hosted else "Restart python local_invoice/workspace_app.py."
+    return HTMLResponse(
+        '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        '<title>PhishGuard — Connection setup</title><style>' + workspace_css() +
+        '</style></head><body class="gradio-container">' + HEADER +
+        '<main class="main help-page"><a href="/invoices/">← Back to invoice review</a>'
+        '<section class="simple-intro"><h1>Connect Google</h1>'
+        '<p>The app owner completes this setup once. Then you can sign in with Google.</p></section>'
+        '<ol class="help-steps"><li><h2>Create a Google web client</h2>'
+        '<p>Enable the Gmail API, configure the consent screen, add your account as a test user, '
+        'and create an OAuth client of type Web application.</p></li>'
+        '<li><h2>Register this redirect URL</h2><code>' + escape(callback) +
+        '</code><p>Copy this exact URL into the Google client’s authorized redirect URIs.</p></li>'
+        '<li><h2>Add the server credentials</h2>' + configuration + '</li>'
+        '<li><h2>Apply the configuration</h2><p>' + restart + '</p></li></ol>'
+        + ('<p>Cloud Gmail sessions still need shared storage before this deployment can reliably process inboxes across server restarts.</p>' if hosted else '') +
+        '<p><a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener noreferrer">Open Google Cloud ↗</a></p>'
+        '<a class="repository-link" href="https://github.com/zodun/phishing-triage-service" target="_blank" rel="noopener noreferrer">GitHub repository ↗</a>'
+        '</main></body></html>'
+    )

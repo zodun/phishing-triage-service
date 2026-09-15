@@ -15,6 +15,7 @@ def create_app(workspace=False):
         title="PhishGuard — Invoice Reminders", fill_width=True, delete_cache=(3600, 3600)
     ) as app:
         create_invoice_email_tab(workspace=workspace)
+        gr.HTML('<a class="repository-link" href="https://github.com/zodun/phishing-triage-service" target="_blank" rel="noopener noreferrer">GitHub repository ↗</a>', apply_default_css=False)
     return app
 
 
